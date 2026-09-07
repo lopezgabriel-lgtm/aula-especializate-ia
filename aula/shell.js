@@ -144,9 +144,7 @@ window.AulaShell = (function () {
       ['¿Para qué sirven las insignias?', 'Reconocen tus logros. <strong>Iniciante:</strong> etapa inicial. <strong>Explorador:</strong> Módulo 1. <strong>Arquitecto:</strong> Módulo 3. <strong>Experto:</strong> Módulo 5.'],
       ['¿Cómo se desbloquean unidades y módulos?', 'Dentro de cada módulo las unidades se abren de a una: la siguiente se habilita al completar la anterior. Y el módulo siguiente se abre al terminar el actual.'],
       ['¿Cuándo se habilitan los cuestionarios?', 'El cuestionario de cada módulo se habilita al completar las 4 unidades. Se rinde en Moodle (con tu cuenta del aula virtual) y después marcás su aprobación para cerrar el módulo.'],
-      ['¿Cómo llego a la certificación?', 'Al completar los 5 módulos se habilita la evaluación final. Al aprobarla, accedés a tu certificación.'],
-      ['¿Dónde se guarda mi progreso?', 'En este navegador. Si cambiás de dispositivo o borrás los datos del sitio, el avance no se traslada.'],
-      ['¿Qué pasa si ingreso desde otra computadora o navegador?', 'Vas a tener que volver a marcar los contenidos que ya completaste para reconstruir tu avance en ese navegador. Los cuestionarios no deberás repetirlos: quedan registrados en tu cuenta de Moodle dentro del campus.']
+      ['¿Cómo llego a la certificación?', 'Al completar los 5 módulos se habilita la evaluación final. Al aprobarla, accedés a tu certificación.']
     ].map(function (qa) { return '<dt>' + qa[0] + '</dt><dd>' + qa[1] + '</dd>'; }).join('');
 
     return '' +
@@ -181,9 +179,6 @@ window.AulaShell = (function () {
       '<div class="sb-scroll">' +
         '<a href="' + esc(CFG.links.progreso) + '" class="sb-item" data-nav="progreso">' + IC.progreso + '<span class="lbl">Mi progreso</span></a>' +
         '<a href="' + esc(CFG.links.badges)   + '" class="sb-item" data-nav="badges">' + IC.badges   + '<span class="lbl">Mis logros</span></a>' +
-        '<div class="sb-div"></div>' +
-        '<a href="' + esc(finalHref()) + '" class="sb-item" data-nav="final">' + IC.final + '<span class="lbl">Evaluación final</span></a>' +
-        (certUrl() ? '<a href="' + esc(certUrl()) + '" class="sb-item" target="_blank" rel="noopener" data-nav="cert">' + IC.cert + '<span class="lbl">Descargá tu certificado</span></a>' : '') +
         '<div class="sb-section-gap"></div>' +
         '<div data-sb-tree></div>' +
       '</div>' +
@@ -318,6 +313,13 @@ window.AulaShell = (function () {
         (fState === 'locked'
           ? '<div class="mod-head" aria-disabled="true"><span class="mod-name">' + esc(CFG.final.label) + '</span>' + modRightIcon('locked') + '</div>'
           : '<a class="mod-head mod-head-link" href="' + esc(CFG.final.href) + '"><span class="mod-name">' + esc(CFG.final.label) + '</span>' + (fState === 'completed' ? modRightIcon('completed') : '') + '</a>') +
+        '</div>';
+    }
+
+    /* Nodo "Descargá tu certificado" (enlace a Moodle), después de la Evaluación final */
+    if (CFG.final && CFG.final.certUrl) {
+      html += '<div class="mod mod-single mod-cert">' +
+        '<a class="mod-head mod-head-link" href="' + esc(CFG.final.certUrl) + '" target="_blank" rel="noopener"><span class="mod-name">Descargá tu certificado</span></a>' +
         '</div>';
     }
 
