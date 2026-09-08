@@ -81,16 +81,16 @@ window.AulaScreens = (function () {
 
     // chips
     var chips =
-      '<div class="mi-chip"><span class="mi-chip-ic">' + IC.units + '</span><span class="mi-chip-tx"><b>' + mod.units.length + '</b><span>Unidades</span></span></div>' +
-      (mod.estimatedTime ? '<div class="mi-chip"><span class="mi-chip-ic">' + IC.clock + '</span><span class="mi-chip-tx"><b>' + esc(mod.estimatedTime) + '</b><span>Tiempo estimado</span></span></div>' : '') +
-      '<div class="mi-chip"><span class="mi-chip-ic mi-chip-xp">' + IC.star + '</span><span class="mi-chip-tx"><b>' + xp + ' XP</b><span>XP del módulo</span></span></div>';
+      '<div class="mi-chip"><span class="mi-chip-ic">' + IC.units + '</span><span class="mi-chip-tx"><span>Unidades</span><b>' + mod.units.length + '</b></span></div>' +
+      (mod.estimatedTime ? '<div class="mi-chip"><span class="mi-chip-ic">' + IC.clock + '</span><span class="mi-chip-tx"><span>Tiempo estimado</span><b>' + esc(mod.estimatedTime) + '</b></span></div>' : '') +
+      '<div class="mi-chip"><span class="mi-chip-ic mi-chip-xp">' + IC.star + '</span><span class="mi-chip-tx"><span>XP del módulo</span><b>' + xp + ' XP</b></span></div>';
 
     // objetivos (opcional)
     var objectives = '';
     if (mod.objectives && mod.objectives.length) {
       objectives =
         '<section class="mi-obj">' +
-          '<div class="mi-obj-head"><span class="mi-obj-ic">' + IC.target + '</span><h2>Qué vas a aprender</h2></div>' +
+          '<div class="mi-obj-head"><span class="mi-obj-ic">' + IC.target + '</span><h2>¿Qué vas a aprender?</h2></div>' +
           '<ul class="mi-obj-list">' +
             mod.objectives.map(function (o) { return '<li><span class="mi-obj-check">' + IC.check + '</span>' + esc(o) + '</li>'; }).join('') +
           '</ul>' +
@@ -691,65 +691,106 @@ window.AulaScreens = (function () {
   function renderFinal(host, s) {
     var F = CFG.final || {};
     var closing = {
-      title:     F.closingTitle   || '¡Felicitaciones!',
+      title:     F.closingTitle   || '\u00a1Felicitaciones!',
       message:   F.closingMessage || 'Completaste tu recorrido por el curso.',
       certLabel: F.certLabel      || 'Descargá tu certificado'
     };
     var st = finalState(s);
 
+    // Acceso al cuestionario final (reutilizado en ambos estados). Sin URL -> null.
+    function quizBtn(cls, label, extraAttr) {
+      if (!F.quizUrl) return '';
+      return '<a class="' + cls + '" href="' + esc(F.quizUrl) + '" target="_blank" rel="noopener" ' + (extraAttr || '') + '>' + label + ' ' + IC.ext + '</a>';
+    }
+    function certBtn(cls, label) {
+      if (!F.certUrl) return '';
+      return '<a class="' + cls + '" href="' + esc(F.certUrl) + '" target="_blank" rel="noopener">' + label + ' ' + IC.ext + '</a>';
+    }
+
     if (st === 'locked') {
-      var done = 0; CFG.modules.forEach(function (mod) { var m = s.modules[String(mod.n)]; if (m.u1 && m.u2 && m.u3 && m.u4 && m.quiz) done++; });
+      var done = AP.badges(s).filter(function (b) { return b.kind === 'module' && b.earned; }).length;
       host.innerHTML =
         '<a class="ub-back" href="inicio.html">' + IC.back + ' Volver al inicio</a>' +
         '<div class="locked-notice" data-locked-notice><div class="lock-badge" aria-hidden="true">' + IC.lock + '</div>' +
           '<h2>La evaluación final está bloqueada</h2>' +
-          '<p>Completá los <b>cinco módulos</b> (unidades y cuestionarios) para habilitar la evaluación final. Llevás <b>' + done + ' de ' + CFG.modules.length + '</b> completados.</p>' +
+          '<p>Completá los <b>' + CFG.modules.length + ' módulos</b> (unidades y cuestionarios) para habilitar la evaluación final. Llevás <b>' + done + ' de ' + CFG.modules.length + '</b> completados.</p>' +
           '<a href="progreso.html" class="btn btn-ruta">Ver mi progreso</a></div>';
       return;
     }
 
     if (st === 'completed') {
+      // --- Estado 2: cierre del curso ---
+      // Mis logros: reutiliza el sistema de insignias (medallas obtenidas con imagen).
+      var earned = AP.badges(s).filter(function (b) { return b.earned && b.medal; });
+      var logros = earned.length
+        ? '<section class="fn-logros">' +
+            '<h2 class="fn-sec-tt">Mis logros</h2>' +
+            '<div class="fn-medals">' +
+              earned.map(function (b) {
+                return '<figure class="fn-medal-item"><img src="' + esc(b.medal) + '" alt="' + esc(b.label) + '" loading="lazy"><figcaption>' + esc(b.label) + '</figcaption></figure>';
+              }).join('') +
+            '</div>' +
+          '</section>'
+        : '';
+
+      // Preview del certificado (solo referencia visual, con blur). Opcional por curso.
+      var preview = F.certPreview
+        ? '<div class="fn-cert-preview"><img src="' + esc(F.certPreview) + '" alt="Vista previa del certificado" loading="lazy"><span class="fn-cert-tagfake">Vista previa</span></div>'
+        : '';
+
+      // Acción principal: descargar certificado. Secundaria: acceder a la evaluación.
+      var certReqText = F.certRequirement ||
+        'Para acceder a la certificación necesitás completar y aprobar con un mínimo de 7 los cuestionarios de todos los módulos y el cuestionario final del curso.';
+      var certPrimary = F.certUrl
+        ? '<a class="btn fn-cert-btn" href="' + esc(F.certUrl) + '" target="_blank" rel="noopener">' + IC.award + ' ' + esc(closing.certLabel) + '</a>'
+        : '<span class="fn-pending">Certificado pendiente de configuración.</span>';
+      var evalSecondary = quizBtn('btn btn-ghost fn-eval-again', 'Acceder a la evaluación final', '');
+
       host.innerHTML =
         '<div class="fn fn-done">' +
           '<div class="fn-hero">' +
             '<span class="fn-medal">' + IC.award + '</span>' +
             '<span class="mi-eyebrow">Cierre del curso</span>' +
-            '<h1 class="mi-title">' + esc(closing.title) + '</h1>' +
-            '<p class="mi-desc">' + esc(closing.message) + '</p>' +
+            '<h1 class="fn-congrats">' + esc(closing.title) + '</h1>' +
+            '<p class="fn-hero-desc">' + esc(closing.message) + '</p>' +
           '</div>' +
-          '<div class="cq-card fn-cert">' +
-            '<span class="cq-card-ic">' + IC.award + '</span>' +
-            '<div class="cq-card-tx"><b>Tu certificación</b><span>Se descarga desde Moodle, con tu cuenta del aula virtual.</span></div>' +
-            (F.certUrl
-              ? '<a class="ub-open btn cq-open" href="' + esc(F.certUrl) + '" target="_blank" rel="noopener">' + esc(closing.certLabel) + ' ' + IC.ext + '</a>'
-              : '<span class="fn-pending">Falta cargar el enlace del certificado (certUrl en course.config.js).</span>') +
-          '</div>' +
+          logros +
+          '<section class="fn-cert-section">' +
+            '<h2 class="fn-sec-tt">Tu certificado</h2>' +
+            '<div class="fn-cert-wrap">' +
+              preview +
+              '<div class="fn-cert-info">' +
+                '<p class="fn-cert-msg">Tu certificado ya está disponible. Descargalo desde Moodle, con tu cuenta del aula virtual.</p>' +
+                '<div class="fn-cert-actions">' +
+                  '<div class="fn-cert-req">' + IC.info + '<span>' + esc(certReqText) + '</span></div>' +
+                  certPrimary +
+                  evalSecondary +
+                '</div>' +
+              '</div>' +
+            '</div>' +
+          '</section>' +
         '</div>';
       return;
     }
 
-    // available
+    // --- Estado 1: evaluación final pendiente (CTA principal con presencia) ---
     var visited = AP.getResource('final-quiz-visited');
+    var mainCta = F.quizUrl
+      ? '<a class="btn fn-start-btn" href="' + esc(F.quizUrl) + '" target="_blank" rel="noopener" data-final-visit>' + IC.arrow + ' Realizar Evaluación final</a>'
+      : '<span class="fn-pending">Falta configurar el enlace del cuestionario final para este curso.</span>';
+
     host.innerHTML =
-      '<div class="fn">' +
+      '<div class="fn fn-pending-state">' +
         '<a class="ub-back" href="inicio.html">' + IC.back + ' Volver al inicio</a>' +
-        '<div class="ub-top">' +
-          '<div class="ub-left">' +
-            '<span class="mi-eyebrow">Cierre del curso</span>' +
-            '<h1 class="mi-title">' + esc(F.label || 'Evaluación final') + '</h1>' +
-            '<p class="mi-desc">' + esc(F.description || '') + '</p>' +
-          '</div>' +
-          '<div class="ub-right"><div class="cq-badge is-open">' + IC.quiz + ' Disponible</div></div>' +
+        '<div class="fn-hero fn-hero-start">' +
+          '<span class="fn-start-ic">' + IC.quiz + '</span>' +
+          '<span class="mi-eyebrow">Último paso del recorrido</span>' +
+          '<h1 class="fn-congrats">' + esc(F.label || 'Evaluación final') + '</h1>' +
+          '<p class="fn-hero-desc">Llegaste al último desafío del curso. Realizá la evaluación final para completar tu recorrido.</p>' +
+          '<div class="fn-start-actions">' + mainCta + '</div>' +
         '</div>' +
-        '<div class="cq-card">' +
-          '<span class="cq-card-ic">' + IC.quiz + '</span>' +
-          '<div class="cq-card-tx"><b>Cuestionario final</b><span>Se rinde en Moodle. Necesitás estar logueado en tu cuenta del aula virtual.</span></div>' +
-          (F.quizUrl
-            ? '<a class="ub-open btn cq-open" href="' + esc(F.quizUrl) + '" target="_blank" rel="noopener" data-final-visit>Ir a la evaluación final ' + IC.ext + '</a>'
-            : '<span class="fn-pending">Falta cargar el enlace del cuestionario final (quizUrl en course.config.js).</span>') +
-        '</div>' +
-        '<div class="ub-cta">' +
-          '<div class="mi-note">' + IC.info + '<span>Al aprobar la evaluación final (7 o más) en Moodle, marcala como aprobada para activar tu <b>certificación</b>.</span></div>' +
+        '<div class="ub-cta fn-approve">' +
+          '<div class="mi-note">' + IC.info + '<span>Cuando la apruebes en Moodle (7 o más), marcala como aprobada para completar tu recorrido y habilitar tu <b>certificado</b>.</span></div>' +
           '<div class="ub-cta-actions">' +
             '<button type="button" class="btn btn-complete" data-approve-final ' + (visited ? '' : 'disabled') + '>' + IC.checkC + ' Marcar evaluación como aprobada</button>' +
           '</div>' +
