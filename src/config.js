@@ -86,12 +86,11 @@ const config = {
   // sólo define dónde persiste el repositorio (caché local vs servidor) y,
   // en el servidor, qué implementación de store se usa (placeholder por ahora).
   progress: {
-    // 'local'  → sólo caché en el navegador (idéntico a hoy). Por defecto.
-    // 'remote' → servidor = principal, localStorage = caché.
     mode: (str('PROGRESS_MODE', 'local') === 'remote') ? 'remote' : 'local',
-    // Implementación del store en el backend: 'memory' | 'file' (placeholders).
-    store: str('PROGRESS_STORE', 'memory'),
-    // Carpeta de datos para el store 'file'.
+    store: str('PROGRESS_STORE', 'memory'), // En .env colocar 'springboot'
+    springBootUrl: str('SPRING_BOOT_URL', 'http://localhost:8080'),
+    internalSecret: str('INTERNAL_API_SECRET', ''),
+    courseId: str('COURSE_ID', 'DEFAULT'),
     dataDir: path.resolve(PROJECT_ROOT, str('PROGRESS_DATA_DIR', './.data')),
     endpoint: '/api/progress',
   },

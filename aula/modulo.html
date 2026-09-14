@@ -20,15 +20,19 @@
     <span id="toast-message">Aviso</span>
   </div>
 
-  <!-- Contenido -->
+  <script>window.__AULA_PROGRESS__ = { mode: 'remote', endpoint: '/api/progress' };</script>
+  <script src="progress.repository.js"></script>
   <script src="course.config.js"></script>
   <script src="progress.js"></script>
   <script src="screens.js"></script>
-  <script>AulaScreens.initModulo();</script>
-  <!-- App-shell: sidebar + header -->
   <script src="shell.js"></script>
-  <!-- Ayuda guiada (product tour) -->
   <script src="tour.js"></script>
-  <script>AulaTour.init('modulo');</script>
+  <script>
+    AulaProgressRepo.ready.then(function () {
+      AulaScreens.initModulo();
+      AulaShell.mount();
+      AulaTour.init('modulo');
+    });
+  </script>
 </body>
 </html>
