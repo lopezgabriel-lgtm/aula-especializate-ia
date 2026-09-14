@@ -2157,3 +2157,93 @@ body.px{background:var(--dark-blue);min-height:100vh;margin:0;display:grid;place
   .cq-final-invite{ flex-direction:column; align-items:flex-start; }
   .cq-fi-btn{ width:100%; justify-content:center; }
 }
+
+
+/* =========================================================================
+   Pantalla de Evaluación final — rediseño (Estado 1 pendiente / Estado 2 cierre)
+   Reutiliza variables, radios, sombras y botones existentes.
+   ========================================================================= */
+.fn-hero{ text-align:center; padding:14px 0 6px; }
+.fn-hero .fn-medal,
+.fn-hero .fn-start-ic{
+  width:72px; height:72px; margin:0 auto 12px; border-radius:50%;
+  display:grid; place-items:center; background:var(--mint-light); color:var(--mint-strong);
+}
+.fn-hero .fn-medal svg, .fn-hero .fn-start-ic svg{ width:36px; height:36px; }
+.fn-congrats{ font-size:2.4rem; line-height:1.05; letter-spacing:-.5px; margin:4px 0 8px; color:var(--dark-blue); }
+.fn-hero-desc{ font-size:1.05rem; color:var(--text-muted); max-width:620px; margin:0 auto; line-height:1.5; }
+
+/* Estado 1: CTA principal con presencia */
+.fn-hero-start{ padding:26px 0 10px; }
+.fn-start-actions{ margin-top:20px; }
+.fn-start-btn{
+  background:var(--dark-blue); color:#fff; font-weight:800; font-size:1.05rem;
+  padding:14px 28px; display:inline-flex; align-items:center; gap:10px;
+}
+.fn-start-btn:hover{ background:var(--dark-blue-muted); }
+.fn-start-btn svg{ width:18px; height:18px; }
+.fn-approve{ margin-top:22px; }
+
+/* Secciones del cierre */
+.fn-sec-tt{ font-size:1.15rem; color:var(--dark-blue); margin:0 0 14px; text-align:center; }
+
+/* Mis logros: fila de medallas (reutiliza imágenes de insignias) */
+.fn-logros{ margin:26px 0 6px; }
+.fn-medals{
+  display:flex; flex-wrap:wrap; justify-content:center; gap:22px 30px;
+}
+.fn-medal-item{ margin:0; text-align:center; width:96px; }
+.fn-medal-item img{ width:76px; height:76px; object-fit:contain; filter:drop-shadow(0 6px 12px rgba(0,0,0,.12)); }
+.fn-medal-item figcaption{ margin-top:8px; font-size:.8rem; font-weight:600; color:var(--text-muted); }
+
+/* Tu certificado: dos columnas (preview + info) */
+.fn-cert-section{ margin:30px 0 4px; }
+.fn-cert-wrap{
+  display:flex; gap:26px; align-items:center; flex-wrap:wrap;
+  background:var(--card, #fff); border:1px solid var(--line); border-radius:var(--radius);
+  padding:22px; box-shadow:var(--shadow);
+}
+.fn-cert-preview{
+  position:relative; flex:1 1 300px; min-width:260px; border-radius:12px; overflow:hidden;
+  border:1px solid var(--line); background:#eef2f5;
+}
+.fn-cert-preview img{ display:block; width:100%; height:auto; filter:blur(5px); transform:scale(1.03); }
+.fn-cert-tagfake{
+  position:absolute; top:10px; left:10px; z-index:2;
+  background:rgba(29,51,67,.82); color:#fff; font-size:.72rem; font-weight:700;
+  padding:4px 10px; border-radius:99px; letter-spacing:.3px;
+}
+.fn-cert-info{ flex:1 1 260px; min-width:240px; }
+.fn-cert-msg{ font-size:1rem; color:var(--text-main); line-height:1.5; margin:0 0 18px; }
+.fn-cert-actions{ display:flex; flex-direction:column; gap:12px; align-items:flex-start; }
+.fn-cert-btn{
+  background:var(--yellow); color:var(--dark-blue); font-weight:800; font-size:1.02rem;
+  padding:13px 24px; display:inline-flex; align-items:center; gap:9px;
+}
+.fn-cert-btn:hover{ filter:brightness(1.05); }
+.fn-cert-btn svg{ width:18px; height:18px; }
+/* botón secundario (acceder a la evaluación de nuevo) */
+.btn-ghost.fn-eval-again{
+  background:transparent; color:var(--dark-blue); border:1.5px solid var(--line);
+  font-weight:600; padding:11px 20px; display:inline-flex; align-items:center; gap:8px;
+}
+.btn-ghost.fn-eval-again:hover{ border-color:var(--mint); background:var(--mint-light); }
+.btn-ghost.fn-eval-again svg{ width:15px; height:15px; opacity:.8; }
+
+@media (max-width:720px){
+  .fn-congrats{ font-size:1.9rem; }
+  .fn-cert-wrap{ flex-direction:column; align-items:stretch; }
+  .fn-cert-actions{ align-items:stretch; }
+  .fn-cert-btn, .btn-ghost.fn-eval-again{ justify-content:center; }
+  .fn-start-btn{ width:100%; justify-content:center; }
+}
+
+/* Aviso de requisito de certificación (arriba del botón de descarga) */
+.fn-cert-req{
+  display:flex; align-items:flex-start; gap:8px;
+  background:var(--mint-light); border:1px solid var(--line);
+  border-left:3px solid var(--mint); border-radius:10px;
+  padding:10px 12px; margin-bottom:4px; width:100%;
+  font-size:.85rem; color:var(--text-main); line-height:1.4;
+}
+.fn-cert-req svg{ width:16px; height:16px; flex:none; margin-top:1px; color:var(--mint-strong); }

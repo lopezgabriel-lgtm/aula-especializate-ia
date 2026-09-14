@@ -54,6 +54,8 @@ async function main() {
       useDefaults: true,
       directives: {
         'frame-ancestors': frameAncestors,
+        'script-src': ["'self'", "'unsafe-inline'"],
+        'script-src-attr': ["'unsafe-inline'"],
         'upgrade-insecure-requests': null,
       },
     },

@@ -21,6 +21,7 @@
 import fs from 'node:fs';
 import fsp from 'node:fs/promises';
 import path from 'node:path';
+import { SpringBootProgressStore } from './springBootStore.js';
 
 /** Implementación en memoria (volátil). */
 export class MemoryProgressStore {
@@ -68,8 +69,12 @@ export class FileProgressStore {
 /** Fábrica: elige la implementación según config. */
 export function createProgressStore(progressCfg) {
   switch (progressCfg.store) {
-    case 'file': return new FileProgressStore(progressCfg.dataDir);
+    case 'springboot': 
+      return new SpringBootProgressStore();
+    case 'file': 
+      return new FileProgressStore(progressCfg.dataDir);
     case 'memory':
-    default: return new MemoryProgressStore();
+    default: 
+      return new MemoryProgressStore();
   }
 }

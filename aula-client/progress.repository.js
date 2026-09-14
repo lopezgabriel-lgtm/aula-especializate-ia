@@ -1,29 +1,13 @@
 /* =========================================================================
-   progress.repository.js — Capa de PERSISTENCIA desacoplada del progreso.
+   progress.repository.js — Capa de PERSISTENCIA. SOLO backend.
+   No usa localStorage: el progreso vive en memoria durante la sesión de
+   la pestaña (se repuebla desde el servidor en cada carga) y se persiste
+   en el servidor en cada cambio (debounced).
 
-   La lógica educativa (progress.js) es SÍNCRONA y no debe saber DÓNDE se
-   persiste. Este repositorio implementa esa frontera:
-
-     • Caché local (síncrona)   → loadLocal() / saveLocal()   [localStorage]
-       Es lo que progress.js usa directamente. Comportamiento idéntico al actual.
-
-     • Persistencia remota (async) → loadRemote() / saveRemote()
-       Habla con NUESTRO backend (/api/progress). El backend deriva la identidad
-       del estudiante desde la SESIÓN LTI: el navegador nunca envía un user_id.
-
-     • Sincronización (async)   → sync()
-       Al abrir: trae lo remoto, lo reconcilia con la caché (unión sin pérdida,
-       vía AulaProgress.reconcile) y, si hace falta, re-renderiza. Al guardar:
-       escribe la caché al instante y empuja al servidor en segundo plano
-       (con debounce). Si no hay red, queda en la caché y reintenta.
-
-   MODOS (window.__AULA_PROGRESS__.mode):
-     'local'  → sólo caché local. Idéntico a hoy. (por defecto)
-     'remote' → servidor = principal, localStorage = caché.
-
-   Cambiar de tecnología de almacenamiento NO toca este archivo ni progress.js:
-   sólo cambia la implementación del store en el backend (y, si acaso, el
-   endpoint). La lógica educativa queda intacta.
+   Por diseño ya NO hay reconciliación local-vs-remoto: hay una única fuente
+   de verdad (el servidor). Esto también elimina el riesgo de "bleed-over"
+   de progreso entre alumnos en una compu compartida: no queda nada
+   persistido en el navegador que un alumno pueda heredar del anterior.
    ========================================================================= */
 (function () {
   'use strict';
@@ -31,17 +15,12 @@
   var CFG = window.__AULA_PROGRESS__ || { mode: 'local', endpoint: '/api/progress' };
   var MODE = CFG.mode === 'remote' ? 'remote' : 'local';
   var ENDPOINT = CFG.endpoint || '/api/progress';
-  var KEY = (window.AulaProgress && window.AulaProgress.STORAGE_KEY) || 'especializate_ia_progress_v2';
   var PUSH_DEBOUNCE_MS = 800;
 
-  /* --------------------------- Caché local --------------------------- */
-  var mem = null;
-  function storageOk() {
-    try { window.localStorage.setItem('__aula_repo_t__', '1'); window.localStorage.removeItem('__aula_repo_t__'); return true; }
-    catch (e) { return false; }
-  }
-  function loadLocal() { return storageOk() ? window.localStorage.getItem(KEY) : mem; }
-  function writeLocalRaw(str) { if (storageOk()) window.localStorage.setItem(KEY, str); else mem = str; }
+  /* --------------------- caché EN MEMORIA (no persistente) -------------- */
+  var mem = null; // string JSON o null; vive solo mientras dura la pestaña
+  function loadLocal() { return mem; }
+  function writeLocalRaw(str) { mem = str; }
   function saveLocal(str) { writeLocalRaw(str); schedulePush(); }
 
   /* ------------------------ Adaptador remoto ------------------------- */
@@ -70,8 +49,6 @@
     };
   }
   var remote = MODE === 'remote' ? httpRemote(ENDPOINT) : nullRemote();
-  function loadRemote() { return remote.load(); }
-  function saveRemote(str) { return remote.save(str); }
 
   /* --------------- Empuje al servidor (debounced) -------------------- */
   var pushTimer = null, dirty = false, pushing = false;
@@ -85,53 +62,46 @@
     if (MODE !== 'remote' || pushing || !dirty) return Promise.resolve();
     pushing = true;
     var snapshot = loadLocal();
-    return saveRemote(snapshot)
+    return remote.save(snapshot)
       .then(function () { dirty = false; })
-      .catch(function () { /* sin red: queda dirty y reintenta luego */ })
+      .catch(function () {
+        // Sin red / servidor caído: NO hay caché local de respaldo.
+        // Queda "dirty" y reintenta en el próximo cambio o en el próximo
+        // debounce; avisamos a la UI para que el alumno sepa que no se guardó.
+        try { window.dispatchEvent(new CustomEvent('aula-progress-sync-error')); } catch (e) {}
+      })
       .then(function () { pushing = false; });
   }
 
-  /* ----------------------- Sincronización ---------------------------- */
-  var reloadedOnce = false;
-  function onHydrated(remoteHadMore) {
-    // El servidor/otro dispositivo aportó progreso que la pantalla ya
-    // renderizada no refleja. La forma menos invasiva de re-renderizar sin
-    // tocar cada pantalla es recargar una vez (idempotente: tras recargar la
-    // caché ya contiene todo y no se vuelve a recargar).
-    if (remoteHadMore && !reloadedOnce) {
-      reloadedOnce = true;
-      try { window.location.reload(); } catch (e) {}
-    }
+  /* ----------------------- Carga inicial ------------------------------
+     Una sola vez por carga de página: trae el doc del servidor (o null si
+     el alumno es nuevo) y lo deja en memoria. No hay merge: gana el server.
+     ---------------------------------------------------------------------- */
+  var readyResolve;
+  var ready = new Promise(function (res) { readyResolve = res; });
+
+  function init() {
+    if (MODE !== 'remote') { mem = null; readyResolve(); return; }
+    remote.load()
+      .then(function (str) { mem = str; })
+      .catch(function (e) {
+        // Sin sesión o sin red: arrancamos en blanco (defaultState se
+        // encarga en progress.js). auth.js es responsable de redirigir si
+        // la sesión venció; acá no duplicamos esa lógica.
+        mem = null;
+      })
+      .then(readyResolve);
   }
-  function sync() {
-    if (MODE !== 'remote') return Promise.resolve();
-    if (!(window.AulaProgress && typeof window.AulaProgress.reconcile === 'function')) return Promise.resolve();
-    return loadRemote().then(function (remoteStr) {
-      var local = loadLocal();
-      if (remoteStr == null) {
-        // El servidor aún no tiene nada: si hay progreso local, lo subimos.
-        if (local) { dirty = true; return flush(); }
-        return;
-      }
-      var rec = window.AulaProgress.reconcile(remoteStr, local);
-      writeLocalRaw(rec.merged);
-      var jobs = [];
-      if (rec.localHadMore) { dirty = true; jobs.push(flush()); }
-      return Promise.all(jobs).then(function () { onHydrated(rec.remoteHadMore); });
-    }).catch(function (e) {
-      // Sin sesión o sin red: seguimos con la caché local, sin romper nada.
-      if (e && e.noSession) { /* la capa de sesión se encarga del vencimiento */ }
-    });
-  }
+  init();
 
   /* ------------------- Flush final al salir -------------------------- */
   window.addEventListener('pagehide', function () {
-    if (MODE === 'remote' && dirty) {
+    if (MODE === 'remote' && dirty && mem != null) {
       try {
         fetch(ENDPOINT, {
           method: 'PUT', credentials: 'same-origin', keepalive: true,
           headers: { 'Content-Type': 'application/json' },
-          body: loadLocal()
+          body: mem
         });
       } catch (e) {}
     }
@@ -140,20 +110,11 @@
   /* --------------------------- API pública --------------------------- */
   window.AulaProgressRepo = {
     mode: MODE,
-    // caché local (la usa progress.js)
+    ready: ready,          // <- las pantallas esperan esto antes de renderizar
     loadLocal: loadLocal,
     saveLocal: saveLocal,
-    // persistencia remota
-    loadRemote: loadRemote,
-    saveRemote: saveRemote,
-    // orquestación
-    sync: sync,
+    loadRemote: remote.load,
+    saveRemote: remote.save,
     flush: flush
   };
-
-  // Arranque de la sincronización (sólo en modo remoto).
-  if (MODE === 'remote') {
-    if (document.readyState !== 'loading') sync();
-    else document.addEventListener('DOMContentLoaded', sync);
-  }
 })();

@@ -1,20 +1,4 @@
-/* =========================================================================
-   course.config.js — FUENTE ÚNICA DE CONTENIDO / NAVEGACIÓN del curso.
-   La consumen shell.js (sidebar + header) y screens.js (pantallas).
-   Para clonar a otro curso, en principio alcanza con editar este archivo.
-
-   Estados (bloqueado/disponible/en progreso/completado) NO se definen acá:
-   se derivan de progress.js (fuente de verdad de la lógica).
-
-   MÓDULO (editable): description, estimatedTime, video.duration, objectives.
-   UNIDAD (editable): description, video, y su lista de recursos.
-     Cada recurso: { id, category, type, label, required, url }
-       - required:true  => es OBLIGATORIO para poder completar la unidad.
-       - Por defecto "Material de estudio" es obligatorio (preserva la regla
-         actual: hay que abrirlo). Podés marcar otros como obligatorios.
-       - La cantidad y el tipo de recursos dependen de lo que cargues acá:
-         no todas las unidades necesitan los mismos.
-   ========================================================================= */
+/* course.config.js — Introducción a la IA */
 window.COURSE_CONFIG = {
   "name": "Introducción a la IA",
   "logo": "img/especializate-logo-blanco.png",
@@ -59,8 +43,8 @@ window.COURSE_CONFIG = {
   "modules": [
     {
       "n": 1,
-      "title": "Fundamentos de IA",
-      "description": "Antes de comenzar, mirá este video para conocer los temas que vas a trabajar en el módulo: cómo surgió la Inteligencia Artificial, de qué manera aprende, qué la diferencia de la automatización y cuáles son los principales tipos de IA que encontramos en la actualidad.",
+      "title": "Fundamentos de la IA",
+      "description": "En este módulo vas a conocer los fundamentos de la Inteligencia Artificial: qué es, cómo evolucionó, de qué manera aprende y cuáles son sus principales tipos. También vas a reconocer sus capacidades, limitaciones y aplicaciones en situaciones cotidianas, educativas y laborales.",
       "href": "modulo.html?m=1",
       "estimatedTime": "Aprox. 3 hs",
       "video": {
@@ -69,16 +53,17 @@ window.COURSE_CONFIG = {
       },
       "quizUrl": "https://aulasvirtuales.bue.edu.ar/mod/quiz/view.php?id=979580",
       "objectives": [
-        "Conocer cómo surgió y evolucionó la inteligencia artificial.",
-        "Distinguir la inteligencia artificial de la automatización.",
-        "Comprender de qué manera aprende una IA.",
-        "Identificar los principales tipos de inteligencia artificial."
+        "Qué es la Inteligencia Artificial y cómo evolucionó.",
+        "Diferencias entre automatización e IA.",
+        "Cómo aprende una IA a partir de datos y modelos.",
+        "Tipos de IA: analítica, generativa e híbrida.",
+        "Capacidades, limitaciones, sesgos y necesidad de supervisión humana."
       ],
       "units": [
         {
           "n": 1,
           "title": "Historia y evolución de la inteligencia artificial",
-          "description": null,
+          "description": "Vas a descubrir qué significa realmente hablar de Inteligencia Artificial, cómo surgió y qué avances hicieron posible su desarrollo actual. Además, vas a comenzar a reconocer cómo aparece la IA en situaciones cotidianas y cuáles son sus principales capacidades y límites.",
           "video": {
             "youtubeId": "UY23hIPulFk"
           },
@@ -111,8 +96,8 @@ window.COURSE_CONFIG = {
         },
         {
           "n": 2,
-          "title": "Automatización vs. inteligencia artificial",
-          "description": null,
+          "title": "Automatización vs inteligencia artificial",
+          "description": "Vas a aprender a distinguir la automatización de la Inteligencia Artificial según su forma de funcionar. También vas a conocer cómo pueden combinarse en sistemas de automatización inteligente y qué criterios permiten elegir la tecnología más adecuada para cada tarea.",
           "video": {
             "youtubeId": "_MNXmMzhs44"
           },
@@ -145,8 +130,8 @@ window.COURSE_CONFIG = {
         },
         {
           "n": 3,
-          "title": "¿Cómo aprende una IA?",
-          "description": null,
+          "title": "¿Cómo aprende una IA? datos, modelos y entrenamiento",
+          "description": "Vas a conocer qué ocurre detrás del aprendizaje de una IA: cómo utiliza datos, modelos y procesos de entrenamiento para reconocer patrones y generar resultados. También vas a analizar cómo la calidad de los datos, los errores y los sesgos pueden afectar su funcionamiento.",
           "video": {
             "youtubeId": "hac3BV_eCTo"
           },
@@ -179,8 +164,8 @@ window.COURSE_CONFIG = {
         },
         {
           "n": 4,
-          "title": "Tipos de inteligencia artificial",
-          "description": null,
+          "title": "Tipos de inteligencia artificial: analítica, generativa y sistemas híbridos",
+          "description": "Vas a diferenciar la IA analítica, generativa e híbrida según lo que cada una puede hacer y producir. A partir de ejemplos concretos, vas a reconocer sus aplicaciones y a desarrollar criterios para elegir qué tipo de IA resulta más adecuado según la tarea.",
           "video": {
             "youtubeId": "LJHv3-o5fqI"
           },
@@ -216,7 +201,7 @@ window.COURSE_CONFIG = {
     {
       "n": 2,
       "title": "Herramientas de IA generativa",
-      "description": "En este módulo vas a descubrir cómo funcionan las herramientas capaces de generar textos, imágenes, audios y código. Mirá el video para conocer el recorrido y comenzar a trabajar con prompts, reformulación de contenidos y estrategias para detectar y corregir posibles errores.",
+      "description": "En este módulo vas a conocer cómo funcionan las herramientas de IA generativa y cómo utilizarlas de manera efectiva. Vas a trabajar con modelos de texto, imagen, audio y código, aprender a diseñar mejores prompts, transformar textos y evaluar críticamente los resultados generados.",
       "href": "modulo.html?m=2",
       "estimatedTime": "Aprox. 3 hs",
       "video": {
@@ -225,16 +210,17 @@ window.COURSE_CONFIG = {
       },
       "quizUrl": "https://aulasvirtuales.bue.edu.ar/mod/quiz/view.php?id=979584",
       "objectives": [
-        "Entender qué es un modelo generativo y cómo produce texto, imágenes y audio.",
-        "Escribir prompts claros para obtener mejores resultados.",
-        "Reformular y mejorar contenidos con la ayuda de la IA.",
-        "Detectar y corregir errores frecuentes en las respuestas."
+        "Cómo funcionan los modelos generativos.",
+        "Cómo diseñar prompts claros y efectivos.",
+        "Cómo reformular, sintetizar y mejorar textos con IA.",
+        "Cómo detectar alucinaciones, sesgos y errores.",
+        "Cómo verificar y corregir respuestas antes de utilizarlas."
       ],
       "units": [
         {
           "n": 1,
-          "title": "Qué es un modelo generativo",
-          "description": null,
+          "title": "¿Qué es un modelo generativo? Texto, imagen, audio y código",
+          "description": "Vas a conocer qué distingue a la IA generativa de otros tipos de Inteligencia Artificial y cómo produce contenido nuevo. También vas a explorar modelos de texto, imagen, audio y código, la multimodalidad y sus principales limitaciones.",
           "video": {
             "youtubeId": "g7BEgtQ2Edw"
           },
@@ -267,8 +253,8 @@ window.COURSE_CONFIG = {
         },
         {
           "n": 2,
-          "title": "Cómo escribir prompts efectivos",
-          "description": null,
+          "title": "Diseño de prompts efectivos: técnicas, estructura y pensamiento crítico",
+          "description": "Vas a aprender a comunicarte con la IA mediante instrucciones claras y estructuradas. Vas a trabajar con los componentes de un buen prompt, técnicas de prompting, iteración y criterios para evaluar la calidad de las respuestas obtenidas.",
           "video": {
             "youtubeId": "Fgun010qBkE"
           },
@@ -301,8 +287,8 @@ window.COURSE_CONFIG = {
         },
         {
           "n": 3,
-          "title": "Reformulación y mejora de contenidos con IA",
-          "description": null,
+          "title": "Reformulación, síntesis y mejora de textos con IA",
+          "description": "Vas a utilizar la IA como asistente para transformar textos existentes: reformularlos, sintetizarlos, mejorar su claridad y adaptar su tono al destinatario. El objetivo es aprovechar la herramienta sin perder el control sobre el contenido y su significado.",
           "video": {
             "youtubeId": "hMYLXHxxdIQ"
           },
@@ -335,8 +321,8 @@ window.COURSE_CONFIG = {
         },
         {
           "n": 4,
-          "title": "Detección y corrección de errores",
-          "description": null,
+          "title": "Errores frecuentes en la IA: alucinaciones, sesgos y cómo corregirlos",
+          "description": "Vas a aprender a reconocer cuándo una respuesta de IA puede ser incorrecta, sesgada o poco confiable. También vas a incorporar métodos para verificar información y técnicas de prompting que permitan corregir y mejorar las respuestas generadas.",
           "video": {
             "youtubeId": "AC4oJvLt_PY"
           },
@@ -372,7 +358,7 @@ window.COURSE_CONFIG = {
     {
       "n": 3,
       "title": "Datos, análisis y decisiones con IA",
-      "description": "Los resultados de una IA dependen en gran parte de la información que recibe. En este video vas a conocer cómo se abordarán la calidad de los datos, el análisis de patrones y tendencias, y la interpretación crítica de los resultados para aplicarlos en situaciones reales.",
+      "description": "En este módulo vas a aprender a trabajar con datos utilizando Inteligencia Artificial como apoyo. Vas a evaluar la calidad de la información, analizar patrones y tendencias, interpretar resultados con criterio y aplicar estas capacidades en situaciones reales de trabajo.",
       "href": "modulo.html?m=3",
       "estimatedTime": "Aprox. 3 hs",
       "video": {
@@ -381,16 +367,17 @@ window.COURSE_CONFIG = {
       },
       "quizUrl": "https://aulasvirtuales.bue.edu.ar/mod/quiz/view.php?id=979583",
       "objectives": [
-        "Reconocer qué es un dato y por qué importan su calidad y sus fuentes.",
-        "Analizar datos con ayuda de IA para detectar patrones y tendencias.",
-        "Interpretar los resultados de un análisis para tomar decisiones.",
-        "Explorar aplicaciones de la IA en distintos ámbitos de trabajo."
+        "Cómo evaluar la calidad de los datos antes de analizarlos.",
+        "Cómo clasificar información y detectar patrones y tendencias con IA.",
+        "Cómo interpretar resultados y convertirlos en decisiones.",
+        "Cómo reconocer sesgos, riesgos y conclusiones poco confiables.",
+        "Cómo aplicar la IA en tareas laborales de organización, análisis y comunicación."
       ],
       "units": [
         {
           "n": 1,
-          "title": "Qué es un dato: calidad, fuentes y problemas frecuentes",
-          "description": null,
+          "title": "¿Qué hace que un dato sirva? calidad, fuentes y problemas frecuentes",
+          "description": "Vas a aprender a evaluar si un dato es confiable y útil antes de utilizarlo. Vas a reconocer criterios de calidad, errores frecuentes y señales de alerta, comprendiendo por qué la calidad de la información condiciona cualquier análisis realizado con IA.",
           "video": {
             "youtubeId": "o0EFyKQQirU"
           },
@@ -424,7 +411,7 @@ window.COURSE_CONFIG = {
         {
           "n": 2,
           "title": "Análisis asistido por IA: clasificación, patrones y tendencias",
-          "description": null,
+          "description": "Vas a utilizar la IA para organizar y analizar información existente. Aprenderás a clasificar datos, detectar patrones y reconocer tendencias, formulando prompts que permitan obtener conclusiones claras y útiles.",
           "video": {
             "youtubeId": "BsDhSLqutLs"
           },
@@ -457,8 +444,8 @@ window.COURSE_CONFIG = {
         },
         {
           "n": 3,
-          "title": "Interpretación de resultados",
-          "description": null,
+          "title": "Interpretación de resultados: oportunidades, riesgos y mirada crítica",
+          "description": "Vas a aprender a interpretar los resultados que produce la IA y a darles sentido dentro de un contexto. También vas a identificar oportunidades, riesgos, sesgos y posibles errores antes de utilizar esos resultados para tomar decisiones.",
           "video": {
             "youtubeId": "QWAF_B2MfGo"
           },
@@ -492,7 +479,7 @@ window.COURSE_CONFIG = {
         {
           "n": 4,
           "title": "IA y trabajo: aplicaciones transversales",
-          "description": null,
+          "description": "Vas a integrar la IA en tareas laborales cotidianas para organizar información, analizar comunicaciones y mejorar procesos. El foco estará en identificar qué tareas puede facilitar la IA y cuáles siguen necesitando tu criterio y supervisión.",
           "video": {
             "youtubeId": "rCjMZZ3d5wM"
           },
@@ -528,7 +515,7 @@ window.COURSE_CONFIG = {
     {
       "n": 4,
       "title": "Comunicación y organización con IA",
-      "description": "En este módulo vas a explorar cómo utilizar la IA para ordenar información, organizar tareas y comprender mejor distintos procesos de trabajo. Mirá el video para conocer cómo transformar datos e ideas desordenadas en estructuras claras y útiles, sin perder tu propio criterio.",
+      "description": "En este módulo vas a aprender a organizar información, datos y procesos con apoyo de la Inteligencia Artificial. Vas a transformar información desordenada en estructuras claras, identificar oportunidades de mejora y utilizar la IA como apoyo para comprender, ordenar y comunicar mejor.",
       "href": "modulo.html?m=4",
       "estimatedTime": "Aprox. 3 hs",
       "video": {
@@ -537,16 +524,17 @@ window.COURSE_CONFIG = {
       },
       "quizUrl": "https://aulasvirtuales.bue.edu.ar/mod/quiz/view.php?id=979582",
       "objectives": [
-        "Estructurar información con IA en listas, pasos y tablas.",
-        "Pensar en términos de datos operativos.",
-        "Identificar tareas repetitivas y procesos que se puedan optimizar.",
-        "Usar la IA como apoyo para organizar y pensar mejor."
+        "Cómo estructurar información en listas, pasos, tablas y matrices.",
+        "Cómo reconocer y preparar datos operativos de calidad.",
+        "Cómo identificar tareas repetitivas y procesos.",
+        "Cómo detectar oportunidades de automatización.",
+        "Cómo usar la IA como apoyo para organizar, resumir y clarificar información."
       ],
       "units": [
         {
           "n": 1,
-          "title": "Cómo estructurar información con IA: listas, pasos y tablas",
-          "description": null,
+          "title": "Cómo estructurar información con IA: listas, pasos y tablas simples",
+          "description": "Vas a aprender a transformar información desordenada en estructuras claras y accionables. Vas a trabajar con listas, pasos numerados, tablas y matrices comparativas, eligiendo el formato más adecuado según lo que necesites hacer.",
           "video": {
             "youtubeId": "9tQHGTa8tmk"
           },
@@ -580,7 +568,7 @@ window.COURSE_CONFIG = {
         {
           "n": 2,
           "title": "Pensar en datos operativos",
-          "description": null,
+          "description": "Vas a distinguir entre datos e información y a reconocer qué características hacen que un dato pueda utilizarse correctamente. También vas a identificar errores de calidad que pueden afectar los análisis y resultados producidos por la IA.",
           "video": {
             "youtubeId": "ylt4sv3_kb8"
           },
@@ -614,7 +602,7 @@ window.COURSE_CONFIG = {
         {
           "n": 3,
           "title": "Identificación de tareas repetitivas y procesos",
-          "description": null,
+          "description": "Vas a aprender a reconocer tareas repetitivas y a describir procesos mediante la estructura Disparador → Acción → Resultado. Esto te permitirá detectar qué partes de un proceso pueden simplificarse, mejorarse o automatizarse con apoyo de la IA.",
           "video": {
             "youtubeId": "adDZkBzB4v8"
           },
@@ -648,7 +636,7 @@ window.COURSE_CONFIG = {
         {
           "n": 4,
           "title": "IA como apoyo para pensar mejor",
-          "description": null,
+          "description": "Vas a utilizar la IA como una herramienta para ordenar, resumir, reformular y auditar información existente. También vas a reconocer cuándo puede ayudarte a pensar con mayor claridad y qué situaciones siguen requiriendo criterio, validación y responsabilidad humana.",
           "video": {
             "youtubeId": "DkVUkzc7r0s"
           },
@@ -684,7 +672,7 @@ window.COURSE_CONFIG = {
     {
       "n": 5,
       "title": "Ética, riesgos y uso responsable",
-      "description": "Usar Inteligencia Artificial también implica comprender sus riesgos y tomar decisiones responsables. En este video vas a conocer los temas del módulo: sesgos y discriminación algorítmica, protección de datos personales, deepfakes, desinformación y marcos para un uso seguro y crítico de estas tecnologías.",
+      "description": "En este módulo vas a desarrollar una mirada crítica y responsable sobre el uso de la Inteligencia Artificial. Vas a reconocer riesgos, sesgos y problemas de privacidad, aprender a verificar contenidos potencialmente falsos y conocer los principales marcos y principios que orientan un uso ético de estas tecnologías.",
       "href": "modulo.html?m=5",
       "estimatedTime": "Aprox. 3 hs",
       "video": {
@@ -693,15 +681,17 @@ window.COURSE_CONFIG = {
       },
       "quizUrl": "https://aulasvirtuales.bue.edu.ar/mod/quiz/view.php?id=979581",
       "objectives": [
-        "Reconocer riesgos, sesgos y discriminación algorítmica.",
-        "Identificar deepfakes y desinformación, y valorar la verificación humana.",
-        "Conocer marcos regulatorios y criterios de uso responsable de la IA."
+        "Cómo reconocer riesgos, sesgos y discriminación algorítmica.",
+        "Cómo proteger datos personales y sensibles al usar IA.",
+        "Cómo detectar y verificar deepfakes y desinformación.",
+        "Qué marcos regulatorios existen para la IA.",
+        "Cómo aplicar principios de transparencia, supervisión humana y responsabilidad profesional."
       ],
       "units": [
         {
           "n": 1,
           "title": "Riesgos, sesgos y discriminación algorítmica",
-          "description": null,
+          "description": "Vas a aprender a reconocer los riesgos que pueden surgir del uso de la IA y a diferenciar un error ocasional de un sesgo sistemático. También vas a analizar cómo los datos y las decisiones de diseño pueden generar resultados injustos o discriminatorios.",
           "video": {
             "youtubeId": "8ztw34gxAG4"
           },
@@ -734,8 +724,8 @@ window.COURSE_CONFIG = {
         },
         {
           "n": 2,
-          "title": "Riesgos, sesgos y discriminación algorítmica (II)",
-          "description": null,
+          "title": "Privacidad, datos personales y uso responsable",
+          "description": "Vas a conocer qué información requiere mayor protección al trabajar con IA y cómo reducir riesgos mediante la minimización y anonimización de datos. También vas a incorporar prácticas seguras para proteger información propia y de terceros.",
           "video": {
             "youtubeId": "_Uv7__FvvtM"
           },
@@ -769,7 +759,7 @@ window.COURSE_CONFIG = {
         {
           "n": 3,
           "title": "Deepfakes, desinformación y verificación humana",
-          "description": null,
+          "description": "Vas a aprender qué son los deepfakes y cómo la IA puede utilizarse para generar o manipular imágenes, audios, videos y textos. También vas a incorporar señales de alerta y estrategias de verificación para evaluar contenidos antes de confiar en ellos o compartirlos.",
           "video": {
             "youtubeId": "7mXtgPC1xEE"
           },
@@ -803,7 +793,7 @@ window.COURSE_CONFIG = {
         {
           "n": 4,
           "title": "Marcos regulatorios y uso responsable de la IA",
-          "description": null,
+          "description": "Vas a conocer los principales marcos regulatorios y principios que orientan el uso responsable de la Inteligencia Artificial. El foco estará en aplicar criterios de transparencia, supervisión humana, protección de datos, justicia y responsabilidad profesional en situaciones reales.",
           "video": {
             "youtubeId": "-1U3yI1CJyA"
           },
@@ -842,6 +832,7 @@ window.COURSE_CONFIG = {
     "href": "final.html",
     "description": "La evaluación final integra todo el recorrido. Se habilita al completar los cinco módulos y, al aprobarla, activás tu certificación.",
     "quizUrl": "https://aulasvirtuales.bue.edu.ar/mod/quiz/view.php?id=979585",
-    "certUrl": ""
+    "certUrl": "https://aulasvirtuales.bue.edu.ar/mod/customcert/view.php?id=980627",
+    "certPreview": "img/certificado-preview.png"
   }
 };
