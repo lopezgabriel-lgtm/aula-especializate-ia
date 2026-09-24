@@ -32,35 +32,22 @@
 window.AulaProgress = (function () {
   'use strict';
 
-  var STORAGE_KEY = 'especializate_ia_progress_v2';
-  // Clave del onboarding (la usa tour.js). Se declara acá solo para poder
-  // limpiarla en reset(): "borrar el avance" también reinicia la ayuda guiada.
-  var ONBOARDING_KEY = 'especializate_ia_onboarding_v1';
-  // Registra que el estudiante ENTRÓ al cuestionario de un módulo (no valida
-  // aprobación: eso vive en Moodle). Habilita el botón "Completar módulo".
-  var QUIZVISIT_KEY = 'especializate_ia_quizvisited_v1';
-  function loadQuizVisited() {
-    try { var r = window.localStorage.getItem(QUIZVISIT_KEY); return r ? JSON.parse(r) : {}; }
-    catch (e) { return {}; }
-  }
-  function quizVisited(num) { return !!loadQuizVisited()[String(num)]; }
-  function markQuizVisited(num) {
-    try { var o = loadQuizVisited(); o[String(num)] = true; window.localStorage.setItem(QUIZVISIT_KEY, JSON.stringify(o)); }
-    catch (e) {}
-  }
+  
+  function quizVisited(num) { return !!load().resources['m' + num + '-quiz-entered']; }
+  function markQuizVisited(num) { setResource('m' + num + '-quiz-entered', true); }
 
-  // Registra el acceso al "Material de estudio" de CADA unidad, por separado
-  // (clave "modulo.unidad", p. ej. "1.u2"). Habilita marcar esa unidad como
-  // completada. Visitar el material de una unidad NO habilita el de las demás.
-  var MATVISIT_KEY = 'especializate_ia_matvisited_v1';
-  function loadMatVisited() {
-    try { var r = window.localStorage.getItem(MATVISIT_KEY); return r ? JSON.parse(r) : {}; }
-    catch (e) { return {}; }
+  function matVisited(num, uKey) { return !!load().resources['mat-' + num + '.' + uKey]; }
+  function markMatVisited(num, uKey) { setResource('mat-' + num + '.' + uKey, true); }
+
+  function readRaw() {
+    var repo = window.AulaProgressRepo;
+    if (repo && typeof repo.loadLocal === 'function') return repo.loadLocal();
+    return null; // repo aún no cargó: se usa defaultState() hasta que esté ready
   }
-  function matVisited(num, uKey) { return !!loadMatVisited()[String(num) + '.' + uKey]; }
-  function markMatVisited(num, uKey) {
-    try { var o = loadMatVisited(); o[String(num) + '.' + uKey] = true; window.localStorage.setItem(MATVISIT_KEY, JSON.stringify(o)); }
-    catch (e) {}
+  function writeRaw(str) {
+    var repo = window.AulaProgressRepo;
+    if (repo && typeof repo.saveLocal === 'function') repo.saveLocal(str);
+    // sin repo no hay dónde persistir — ya no hay fallback a localStorage
   }
 
   var UNIT_XP   = 40;   // cada unidad (4 unidades × 40 = 160)
@@ -127,37 +114,11 @@ window.AulaProgress = (function () {
      3) ALMACENAMIENTO (con fallback en memoria si localStorage no está
         disponible, p. ej. algunos navegadores al abrir con file://)
      ---------------------------------------------------------------------- */
-  var memoryStore = null;
-
-  function storageAvailable() {
-    try {
-      var t = '__aula_test__';
-      window.localStorage.setItem(t, '1');
-      window.localStorage.removeItem(t);
-      return true;
-    } catch (e) { return false; }
-  }
-  // Acceso a la CACHÉ LOCAL. Si existe un ProgressRepository (capa de
-  // persistencia desacoplada), delega en él; si no, usa localStorage como
-  // siempre. La lógica educativa no cambia: sigue leyendo/escribiendo de forma
-  // síncrona. El repositorio se encarga, aparte y en segundo plano, de
-  // sincronizar con el servidor (persistencia principal). Ver progress.repository.js.
-  function readRaw() {
-    var repo = window.AulaProgressRepo;
-    if (repo && typeof repo.loadLocal === 'function') {
-      try { return repo.loadLocal(); } catch (e) { /* cae al fallback */ }
-    }
-    return storageAvailable() ? window.localStorage.getItem(STORAGE_KEY) : memoryStore;
-  }
-  function writeRaw(str) {
-    var repo = window.AulaProgressRepo;
-    if (repo && typeof repo.saveLocal === 'function') {
-      try { repo.saveLocal(str); return; } catch (e) { /* cae al fallback */ }
-    }
-    if (storageAvailable()) window.localStorage.setItem(STORAGE_KEY, str); else memoryStore = str;
-  }
 
   /* Combina lo guardado con el default (tolerante a cambios de estructura) */
+
+  var STORAGE_KEY = 'especializate_ia_progress_v2';
+  
   function merge(base, saved) {
     if (!saved || typeof saved !== 'object') return base;
     if (saved.intro) ['especializate', 'programa', 'introduccion'].forEach(function (k) {
@@ -463,17 +424,12 @@ window.AulaProgress = (function () {
     save(s); // save() recalcula XP y el certificado, y persiste en localStorage
     return s;
   }
+
   function reset() {
-    try { if (storageAvailable()) window.localStorage.removeItem(STORAGE_KEY); } catch (e) {}
-    memoryStore = null;
-    // "Volver a empezar" = experiencia de estudiante nuevo: también se olvida el
-    // onboarding, para que el product tour vuelva a mostrarse automáticamente
-    // (la ayuda vive en su propia clave, ver tour.js).
-    try { if (storageAvailable()) window.localStorage.removeItem(ONBOARDING_KEY); } catch (e) {}
-    try { if (storageAvailable()) window.localStorage.removeItem(QUIZVISIT_KEY); } catch (e) {}
-    try { if (storageAvailable()) window.localStorage.removeItem(MATVISIT_KEY); } catch (e) {}
-    try { if (window.AulaTour && window.AulaTour.reset) window.AulaTour.reset(); } catch (e) {}
-    return defaultState();
+    var s = defaultState();
+    save(s); // recompute() + writeRaw() → repo.saveLocal() → PUT al backend
+    try { if (window.AulaTour && window.AulaTour.reset) window.AulaTour.reset(); } catch (e) { }
+    return s;
   }
 
   /* ======================================================================
@@ -1718,6 +1674,12 @@ window.AulaProgress = (function () {
   };
   var toastTimer = null;
   function setupToast() {}
+
+  window.addEventListener('aula-progress-sync-error', function () {
+    showToast('No se pudo guardar tu progreso. Reintentando…', 'warning');
+  });
+
+  
   function showToast(message, type) {
     var toast = document.getElementById('toast');
     var msg = document.getElementById('toast-message');

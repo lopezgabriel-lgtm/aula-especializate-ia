@@ -86,91 +86,94 @@
     </div>
   </div>
 
+  
   <script src="course.config.js"></script>
   <script src="progress.js"></script>
   <script>
-  (function () {
-    var AP = window.AulaProgress, CFG = window.COURSE_CONFIG;
-    function esc(t){ return String(t==null?'':t).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
-    function qs(s){ return document.querySelector(s); }
+    (function () {
+      var AP = window.AulaProgress, CFG = window.COURSE_CONFIG;
+      function esc(t) { return String(t == null ? '' : t).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+      function qs(s) { return document.querySelector(s); }
 
-    /* --- modales (FAQ / contacto): abrir y cerrar --- */
-    document.addEventListener('click', function (e) {
-      if (e.target.closest('[data-open-faq]')) show('faq');
-      else if (e.target.closest('[data-open-contact]')) show('contact');
-      else if (e.target.closest('[data-modal-close]')) hideAll();
-    });
-    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') hideAll(); });
-    function show(n){ var m = qs('[data-modal="'+n+'"]'); if(m){ m.hidden=false; document.body.classList.add('modal-open'); } }
-    function hideAll(){ Array.prototype.forEach.call(document.querySelectorAll('[data-modal]'), function(m){ m.hidden=true; }); document.body.classList.remove('modal-open'); }
+      /* --- modales (FAQ / contacto): abrir y cerrar --- */
+      document.addEventListener('click', function (e) {
+        if (e.target.closest('[data-open-faq]')) show('faq');
+        else if (e.target.closest('[data-open-contact]')) show('contact');
+        else if (e.target.closest('[data-modal-close]')) hideAll();
+      });
+      document.addEventListener('keydown', function (e) { if (e.key === 'Escape') hideAll(); });
+      function show(n) { var m = qs('[data-modal="' + n + '"]'); if (m) { m.hidden = false; document.body.classList.add('modal-open'); } }
+      function hideAll() { Array.prototype.forEach.call(document.querySelectorAll('[data-modal]'), function (m) { m.hidden = true; }); document.body.classList.remove('modal-open'); }
 
-    if (!AP || !CFG) return;
+      if (!AP || !CFG) return;
 
-    function resumeUrl(s){
-      var introDone = !!(s.intro.especializate && s.intro.programa && s.intro.introduccion);
-      if (!introDone) return 'inicio.html';
-      for (var i=0;i<CFG.modules.length;i++){
-        var n = CFG.modules[i].n, m = s.modules[String(n)];
-        var complete = m.u1 && m.u2 && m.u3 && m.u4 && m.quiz;
-        if (!complete){
-          for (var u=1;u<=4;u++){ if(!m['u'+u]) return 'unidad.html?m='+n+'&u='+u; }
-          return 'cuestionario.html?m='+n;
+      function resumeUrl(s) {
+        var introDone = !!(s.intro.especializate && s.intro.programa && s.intro.introduccion);
+        if (!introDone) return 'inicio.html';
+        for (var i = 0; i < CFG.modules.length; i++) {
+          var n = CFG.modules[i].n, m = s.modules[String(n)];
+          var complete = m.u1 && m.u2 && m.u3 && m.u4 && m.quiz;
+          if (!complete) {
+            for (var u = 1; u <= 4; u++) { if (!m['u' + u]) return 'unidad.html?m=' + n + '&u=' + u; }
+            return 'cuestionario.html?m=' + n;
+          }
         }
+        return 'final.html';
       }
-      return 'final.html';
-    }
 
-    var star = '<svg viewBox="0 0 24 24"><path d="M12 2l2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.8 5.9 21.4l1.4-6.8L2.2 9.9l6.9-.8z"/></svg>';
+      var star = '<svg viewBox="0 0 24 24"><path d="M12 2l2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.8 5.9 21.4l1.4-6.8L2.2 9.9l6.9-.8z"/></svg>';
 
-    function apply(s){
-      var introDone = !!(s.intro.especializate && s.intro.programa && s.intro.introduccion);
-      var hasProgress = introDone || s.intro.especializate || s.intro.programa || s.intro.introduccion || (s.xp > 0);
+      function apply(s) {
+        var introDone = !!(s.intro.especializate && s.intro.programa && s.intro.introduccion);
+        var hasProgress = introDone || s.intro.especializate || s.intro.programa || s.intro.introduccion || (s.xp > 0);
 
-      var titleEl = qs('[data-idx-title]');
-      if (titleEl) titleEl.innerHTML = esc(CFG.name).replace(/\bIA\b/g, '<span class="ia">IA</span>');
+        var titleEl = qs('[data-idx-title]');
+        if (titleEl) titleEl.innerHTML = esc(CFG.name).replace(/\bIA\b/g, '<span class="ia">IA</span>');
 
-      var cta = qs('[data-idx-cta]'), ctaLbl = qs('[data-idx-cta-label]');
-      if (cta) cta.setAttribute('href', hasProgress ? resumeUrl(s) : 'inicio.html');
-      if (ctaLbl) ctaLbl.textContent = hasProgress ? 'Continuar donde quedaste' : 'Comenzar el curso';
+        var cta = qs('[data-idx-cta]'), ctaLbl = qs('[data-idx-cta-label]');
+        if (cta) cta.setAttribute('href', hasProgress ? resumeUrl(s) : 'inicio.html');
+        if (ctaLbl) ctaLbl.textContent = hasProgress ? 'Continuar donde quedaste' : 'Comenzar el curso';
 
-      var prog = qs('[data-idx-progress]');
-      if (prog){
-        if (hasProgress){
-          var pct = AP.percent ? AP.percent(s) : 0, xp = s.xp||0, tot = AP.TOTAL_XP||0;
-          var ach = AP.currentAchievement ? AP.currentAchievement(s) : null;
-          var goal = AP.nextGoalText ? AP.nextGoalText(s) : '';
-          prog.innerHTML =
-            '<div class="px-prog-bar"><div class="px-prog-fill" style="width:'+pct+'%"></div></div>' +
-            '<div class="px-prog-row">' +
-              '<span class="px-prog-item"><b>'+pct+'%</b> completado</span>' +
-              '<span class="px-prog-item px-prog-xp">'+star+'<b>'+xp+'</b> / '+tot+' XP</span>' +
-              (ach ? '<span class="px-prog-item"><img src="'+esc(ach.img)+'" alt=""> '+esc(ach.name)+'</span>' : '') +
-            '</div>' +
-            (goal ? '<p class="px-goal">Próximo objetivo: <b>'+esc(goal)+'</b></p>' : '');
-        } else {
-          prog.innerHTML = '<p class="px-motiv">Empezá tu recorrido: completá los tres contenidos iniciales y desbloqueá el Módulo 1.</p>';
+        var prog = qs('[data-idx-progress]');
+        if (prog) {
+          if (hasProgress) {
+            var pct = AP.percent ? AP.percent(s) : 0, xp = s.xp || 0, tot = AP.TOTAL_XP || 0;
+            var ach = AP.currentAchievement ? AP.currentAchievement(s) : null;
+            var goal = AP.nextGoalText ? AP.nextGoalText(s) : '';
+            prog.innerHTML =
+              '<div class="px-prog-bar"><div class="px-prog-fill" style="width:' + pct + '%"></div></div>' +
+              '<div class="px-prog-row">' +
+              '<span class="px-prog-item"><b>' + pct + '%</b> completado</span>' +
+              '<span class="px-prog-item px-prog-xp">' + star + '<b>' + xp + '</b> / ' + tot + ' XP</span>' +
+              (ach ? '<span class="px-prog-item"><img src="' + esc(ach.img) + '" alt=""> ' + esc(ach.name) + '</span>' : '') +
+              '</div>' +
+              (goal ? '<p class="px-goal">Próximo objetivo: <b>' + esc(goal) + '</b></p>' : '');
+          } else {
+            prog.innerHTML = '<p class="px-motiv">Empezá tu recorrido: completá los tres contenidos iniciales y desbloqueá el Módulo 1.</p>';
+          }
         }
+
+        var badgesEl = qs('[data-idx-badges]');
+        if (badgesEl && AP.ACHIEVEMENTS) {
+          badgesEl.innerHTML = AP.ACHIEVEMENTS.map(function (a) {
+            var on = typeof a.unlocked === 'function' ? a.unlocked(s) : false;
+            return '<span class="px-badge ' + (on ? 'is-on' : 'is-off') + '"><img src="' + esc(a.img) + '" alt="Insignia ' + esc(a.name) + '"><small>' + esc(a.name) + '</small></span>';
+          }).join('');
+        }
+
+        var allMods = ['1', '2', '3', '4', '5'].every(function (n) { var m = s.modules[n]; return m.u1 && m.u2 && m.u3 && m.u4 && m.quiz; });
+        function stage(k, done) { var el = qs('[data-stage="' + k + '"]'); if (el) { el.classList.toggle('is-done', !!done); } }
+        stage('inicio', introDone);
+        stage('modulos', allMods);
+        stage('eval', !!(s.final && s.final.quiz));
+        stage('cert', !!s.certificate);
       }
 
-      var badgesEl = qs('[data-idx-badges]');
-      if (badgesEl && AP.ACHIEVEMENTS){
-        badgesEl.innerHTML = AP.ACHIEVEMENTS.map(function(a){
-          var on = typeof a.unlocked === 'function' ? a.unlocked(s) : false;
-          return '<span class="px-badge '+(on?'is-on':'is-off')+'"><img src="'+esc(a.img)+'" alt="Insignia '+esc(a.name)+'"><small>'+esc(a.name)+'</small></span>';
-        }).join('');
-      }
-
-      var allMods = ['1','2','3','4','5'].every(function(n){ var m=s.modules[n]; return m.u1&&m.u2&&m.u3&&m.u4&&m.quiz; });
-      function stage(k,done){ var el = qs('[data-stage="'+k+'"]'); if(el){ el.classList.toggle('is-done', !!done); } }
-      stage('inicio', introDone);
-      stage('modulos', allMods);
-      stage('eval', !!(s.final && s.final.quiz));
-      stage('cert', !!s.certificate);
-    }
-
-    apply(AP.load());
-    window.__idx = { apply: apply, resumeUrl: resumeUrl };
-  })();
+      AulaProgressRepo.ready.then(function () {
+        apply(AP.load());
+        window.__idx = { apply: apply, resumeUrl: resumeUrl };
+      });
+    })();
   </script>
 </body>
 </html>

@@ -421,12 +421,6 @@ window.AulaShell = (function () {
     render();
   }
 
-  /* auto-init */
-  function init() {
-    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mount);
-    else mount();
-  }
-  init();
 
   return { mount: mount, render: render };
 })();
