@@ -54,6 +54,7 @@ async function main() {
       useDefaults: true,
       directives: {
         'frame-ancestors': frameAncestors,
+        frameSrc: ["'self'", "https://www.youtube.com", "https://www.youtube-nocookie.com"],
         'script-src': ["'self'", "'unsafe-inline'"],
         'script-src-attr': ["'unsafe-inline'"],
         'upgrade-insecure-requests': null,
