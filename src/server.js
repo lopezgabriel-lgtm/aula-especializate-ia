@@ -50,6 +50,7 @@ async function main() {
   const frameAncestors = ["'self'"];
   if (config.moodleEffectiveUrl) frameAncestors.push(config.moodleEffectiveUrl);
   app.use(helmet({
+    referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
     contentSecurityPolicy: {
       useDefaults: true,
       directives: {
