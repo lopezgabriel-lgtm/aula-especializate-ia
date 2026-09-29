@@ -12,7 +12,7 @@ window.COURSE_CONFIG = {
     "href": "inicio.html",
     "eyebrow": "Bienvenida",
     "title": "Inicio y bienvenida",
-    "description": "Antes de comenzar, conocé especIAlizate, el programa del curso y una introducción al recorrido. Al completar estos tres contenidos se habilita el Módulo 1.",
+    "description": "Antes de comenzar, conocé especIAlizate, una introducción al recorrido y el programa del curso. Al completar estos tres contenidos se habilita el Módulo 1.",
     "resources": [
       {
         "step": "intro.especializate",
@@ -23,20 +23,20 @@ window.COURSE_CONFIG = {
         "description": "Mirá este video para conocer qué es especIAlizate, cómo está organizado el programa y qué vas a encontrar durante el recorrido."
       },
       {
-        "step": "intro.programa",
-        "required": true,
-        "label": "Programa del curso",
-        "kind": "pdf",
-        "url": "https://drive.google.com/file/d/19hbj1rzgdW8mM5mOw3sCXJp3Mv1mKA2v/view?usp=sharing",
-        "description": "Consultá el programa para conocer la propuesta formativa, los objetivos, la estructura del recorrido, los aprendizajes esperados y la modalidad de cursada."
-      },
-      {
         "step": "intro.introduccion",
         "required": true,
         "label": "Introducción al curso",
         "kind": "video",
         "youtubeId": "wO51weDN_cM",
         "description": "En este video vas a conocer la propuesta del curso y cómo se organiza el recorrido a lo largo de los cinco módulos."
+      },
+      {
+        "step": "intro.programa",
+        "required": true,
+        "label": "Programa del curso",
+        "kind": "pdf",
+        "url": "https://drive.google.com/file/d/19hbj1rzgdW8mM5mOw3sCXJp3Mv1mKA2v/view?usp=sharing",
+        "description": "Consultá el programa para conocer la propuesta formativa, los objetivos, la estructura del recorrido, los aprendizajes esperados y la modalidad de cursada."
       }
     ]
   },
@@ -832,7 +832,6 @@ window.COURSE_CONFIG = {
     "href": "final.html",
     "description": "La evaluación final integra todo el recorrido. Se habilita al completar los cinco módulos y, al aprobarla, activás tu certificación.",
     "quizUrl": "https://aulasvirtuales.bue.edu.ar/mod/quiz/view.php?id=979585",
-    "certUrl": "https://aulasvirtuales.bue.edu.ar/mod/customcert/view.php?id=980627",
-    "certPreview": "img/certificado-preview.png"
+    "certUrl": "https://aulasvirtuales.bue.edu.ar/mod/customcert/view.php?id=980627"
   }
 };

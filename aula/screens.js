@@ -11,6 +11,7 @@ window.AulaScreens = (function () {
 
   function qparam(name) { return new URLSearchParams(location.search).get(name); }
   function esc(s) { return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+  function unitKeysOf(m) { return Object.keys(m || {}).filter(function (k) { return /^u\d+$/.test(k); }); }
 
   /* ----- reglas de estado (derivadas de progress.js) ----- */
   function modUnlocked(s, n) { return AP.moduleUnlocked(s, n); }
@@ -519,16 +520,16 @@ window.AulaScreens = (function () {
     var quizCard =
       '<div class="cq-card">' +
         '<span class="cq-card-ic">' + IC.quiz + '</span>' +
-        '<div class="cq-card-tx"><b>Cuestionario del módulo</b><span>Se rinde en Moodle. Al aprobarlo, cerrás el módulo.</span></div>' +
+        '<div class="cq-card-tx"><b>Cuestionario del módulo</b><span>Se rinde en Moodle. Al marcarlo como realizado, cerrás el módulo.</span></div>' +
         (mod.quizUrl ? '<a class="ub-open btn cq-open" href="' + esc(mod.quizUrl) + '" target="_blank" rel="noopener" data-quiz-visit>Ir al cuestionario ' + IC.ext + '</a>' : '') +
       '</div>';
 
-    var lastDone = done && !next; // último módulo aprobado → invitar a la evaluación final
+    var lastDone = done && !next; // último módulo realizado → invitar a la evaluación final
     var cta = done
       ? (next
           ? '<a class="btn btn-complete" href="modulo.html?m=' + (n + 1) + '">' + IC.arrow + ' Continuar al Módulo ' + (n + 1) + '</a>'
           : '')
-      : '<button type="button" class="btn btn-complete" data-close-module ' + (visited ? '' : 'disabled') + '>' + IC.checkC + ' Marcar como aprobado y cerrar el módulo</button>';
+      : '<button type="button" class="btn btn-complete" data-close-module ' + (visited ? '' : 'disabled') + '>' + IC.checkC + ' Marcar como realizado y cerrar el módulo</button>';
 
     host.innerHTML =
       '<div class="ub">' +
@@ -537,14 +538,14 @@ window.AulaScreens = (function () {
           '<div class="ub-left">' +
             '<span class="mi-eyebrow">Módulo ' + n + ' · Cierre</span>' +
             '<h1 class="mi-title">Cuestionario final</h1>' +
-            '<p class="mi-desc">Es el último paso del módulo. Rendí el cuestionario en Moodle y marcá su aprobación para cerrar el módulo y desbloquear el siguiente.</p>' +
+            '<p class="mi-desc">Es el último paso del módulo. Rendí el cuestionario en Moodle y marcalo como realizado para cerrar el módulo y desbloquear el siguiente.</p>' +
           '</div>' +
           '<div class="ub-right"><div class="cq-badge ' + (done ? 'is-done' : 'is-open') + '">' + (done ? IC.checkC + ' Completado' : IC.quiz + ' Disponible') + '</div></div>' +
         '</div>' +
         quizCard +
         (lastDone ? finalInvite() : '') +
         '<div class="ub-cta">' +
-          '<div class="mi-note">' + IC.info + '<span>' + (done ? 'Cuestionario aprobado. El módulo quedó <b>completado</b>.' : 'Primero <b>abrí el cuestionario</b> en Moodle; después vas a poder marcarlo como aprobado.') + '</span></div>' +
+          '<div class="mi-note">' + IC.info + '<span>' + (done ? 'Cuestionario marcado como realizado. El módulo quedó <b>completado</b>.' : 'Primero <b>abrí el cuestionario</b> en Moodle; después vas a poder marcarlo como realizado.') + '</span></div>' +
           '<div class="ub-cta-actions">' + cta + '</div>' +
         '</div>' +
       '</div>';
@@ -604,12 +605,13 @@ window.AulaScreens = (function () {
     var mods = CFG.modules.map(function (mod) {
       var n = mod.n, m = s.modules[String(n)];
       var st = moduleProgressState(s, n);
-      var uDone = ['u1', 'u2', 'u3', 'u4'].filter(function (k) { return m[k]; }).length;
-      var mpct = Math.round((uDone + (m.quiz ? 1 : 0)) / 5 * 100);
+      var uTotal = mod.units.length;
+      var uDone = unitKeysOf(m).filter(function (k) { return m[k]; }).length;
+      var mpct = Math.round((uDone + (m.quiz ? 1 : 0)) / (uTotal + 1) * 100);
       var inner =
         '<div class="pr-mod-tt"><b>Módulo ' + n + '</b><span>' + esc(mod.title) + '</span></div>' +
         '<div class="pr-mod-mid"><div class="pr-mod-bar"><div class="pr-mod-fill" style="width:' + mpct + '%"></div></div>' +
-          '<span class="pr-mod-meta">' + uDone + '/4 unidades · Cuestionario ' + (m.quiz ? 'aprobado' : 'pendiente') + '</span></div>' +
+          '<span class="pr-mod-meta">' + uDone + '/' + uTotal + ' unidades · Cuestionario ' + (m.quiz ? 'realizado' : 'pendiente') + '</span></div>' +
         prChip(st);
       return st === 'locked'
         ? '<div class="pr-mod" data-state="locked">' + inner + '</div>'
@@ -648,6 +650,15 @@ window.AulaScreens = (function () {
   function renderBadges(host, s) {
     var list = AP.ACHIEVEMENTS || [];
     var got = list.filter(function (a) { return achUnlocked(a, s); }).length;
+    var total = list.length;
+    var pct = total ? Math.round(got / total * 100) : 0;
+    var nextA = null;
+    for (var i = 0; i < list.length; i++) { if (!achUnlocked(list[i], s)) { nextA = list[i]; break; } }
+    var synth = (got >= total && total > 0)
+      ? 'Conseguiste todas las insignias del recorrido.'
+      : (got === 0
+          ? 'Todavía no obtuviste insignias. Avanzá en el recorrido para desbloquear la primera.'
+          : 'Vas muy bien. Seguí avanzando para desbloquear ' + (nextA ? '<b>' + esc(nextA.name) + '</b>' : 'las que faltan') + '.');
     var cards = list.map(function (a) {
       var on = achUnlocked(a, s);
       return '<div class="bd-card" data-state="' + (on ? 'got' : 'locked') + '">' +
@@ -659,13 +670,22 @@ window.AulaScreens = (function () {
       '</div>';
     }).join('');
     host.innerHTML =
-      '<div class="bd">' +
-        '<header class="pr-hero">' +
-          '<span class="mi-eyebrow">Logros</span>' +
-          '<h1 class="mi-title">Mis logros</h1>' +
-          '<p class="mi-desc">Insignias que vas desbloqueando al avanzar en el recorrido. Llevás <b>' + got + ' de ' + list.length + '</b>.</p>' +
+      '<div class="bd bd-compact">' +
+        '<header class="bd-head">' +
+          '<div class="bd-head-top">' +
+            '<div class="bd-head-titles">' +
+              '<span class="mi-eyebrow">Logros</span>' +
+              '<h1 class="bd-title">Mis logros</h1>' +
+            '</div>' +
+            '<div class="bd-count-box">' +
+              '<span class="bd-count-num">' + got + '<small> / ' + total + '</small></span>' +
+              '<span class="bd-count-lbl">insignias obtenidas</span>' +
+            '</div>' +
+          '</div>' +
+          '<div class="bd-progress" role="progressbar" aria-valuenow="' + pct + '" aria-valuemin="0" aria-valuemax="100"><span style="width:' + pct + '%"></span></div>' +
+          '<p class="bd-synth">' + synth + '</p>' +
         '</header>' +
-        '<div class="bd-grid">' + cards + '</div>' +
+        '<div class="bd-grid bd-grid-compact">' + cards + '</div>' +
       '</div>';
   }
   function initBadges() {
@@ -719,18 +739,19 @@ window.AulaScreens = (function () {
     }
 
     if (st === 'completed') {
-      // --- Estado 2: cierre del curso ---
+      // --- Estado 2: cierre del recorrido (evaluación final marcada como realizada) ---
+      // No afirma aprobación ni disponibilidad del certificado: eso se valida en Moodle.
       // Mis logros: reutiliza el sistema de insignias (medallas obtenidas con imagen).
       var earned = AP.badges(s).filter(function (b) { return b.earned && b.medal; });
       var logros = earned.length
-        ? '<section class="fn-logros">' +
-            '<h2 class="fn-sec-tt">Mis logros</h2>' +
+        ? '<div class="fn-logros-strip">' +
+            '<span class="fn-logros-lbl">Mis logros</span>' +
             '<div class="fn-medals">' +
               earned.map(function (b) {
                 return '<figure class="fn-medal-item"><img src="' + esc(b.medal) + '" alt="' + esc(b.label) + '" loading="lazy"><figcaption>' + esc(b.label) + '</figcaption></figure>';
               }).join('') +
             '</div>' +
-          '</section>'
+          '</div>'
         : '';
 
       // Preview del certificado (solo referencia visual, con blur). Opcional por curso.
@@ -738,37 +759,35 @@ window.AulaScreens = (function () {
         ? '<div class="fn-cert-preview"><img src="' + esc(F.certPreview) + '" alt="Vista previa del certificado" loading="lazy"><span class="fn-cert-tagfake">Vista previa</span></div>'
         : '';
 
-      // Acción principal: descargar certificado. Secundaria: acceder a la evaluación.
+      // Acción principal: acceder al certificado en Moodle. Secundaria: volver a la evaluación.
       var certReqText = F.certRequirement ||
-        'Para acceder a la certificación necesitás completar y aprobar con un mínimo de 7 los cuestionarios de todos los módulos y el cuestionario final del curso.';
+        'Para certificar necesitás aprobar en Moodle, con un mínimo de 7, los cuestionarios de todos los módulos y el cuestionario final.';
       var certPrimary = F.certUrl
         ? '<a class="btn fn-cert-btn" href="' + esc(F.certUrl) + '" target="_blank" rel="noopener">' + IC.award + ' ' + esc(closing.certLabel) + '</a>'
         : '<span class="fn-pending">Certificado pendiente de configuración.</span>';
-      var evalSecondary = quizBtn('btn btn-ghost fn-eval-again', 'Acceder a la evaluación final', '');
+      var evalSecondary = quizBtn('btn btn-ghost fn-eval-again', 'Acceder a la Evaluación final', '');
 
       host.innerHTML =
         '<div class="fn fn-done">' +
-          '<div class="fn-hero">' +
-            '<span class="fn-medal">' + IC.award + '</span>' +
-            '<span class="mi-eyebrow">Cierre del curso</span>' +
-            '<h1 class="fn-congrats">' + esc(closing.title) + '</h1>' +
-            '<p class="fn-hero-desc">' + esc(closing.message) + '</p>' +
-          '</div>' +
-          logros +
-          '<section class="fn-cert-section">' +
-            '<h2 class="fn-sec-tt">Tu certificado</h2>' +
-            '<div class="fn-cert-wrap">' +
+          '<div class="fn-done-grid">' +
+            '<section class="fn-close-card">' +
+              '<span class="fn-close-ic">' + IC.checkC + '</span>' +
+              '<span class="mi-eyebrow">Cierre del recorrido</span>' +
+              '<h1 class="fn-done-title">Evaluación final realizada</h1>' +
+              '<p class="fn-done-lead">Registramos esta instancia como realizada. La aprobación y la disponibilidad de tu certificado se validan en Moodle.</p>' +
+              logros +
+            '</section>' +
+            '<section class="fn-cert-card">' +
+              '<h2 class="fn-sec-tt">Tu certificado</h2>' +
               preview +
-              '<div class="fn-cert-info">' +
-                '<p class="fn-cert-msg">Tu certificado ya está disponible. Descargalo desde Moodle, con tu cuenta del aula virtual.</p>' +
-                '<div class="fn-cert-actions">' +
-                  '<div class="fn-cert-req">' + IC.info + '<span>' + esc(certReqText) + '</span></div>' +
-                  certPrimary +
-                  evalSecondary +
-                '</div>' +
+              '<p class="fn-cert-msg">Si completaste y aprobaste todos los cuestionarios y la Evaluación final, podés acceder a Moodle para consultar y descargar tu certificado.</p>' +
+              '<div class="fn-cert-req">' + IC.info + '<span>' + esc(certReqText) + '</span></div>' +
+              '<div class="fn-cert-actions">' +
+                certPrimary +
+                evalSecondary +
               '</div>' +
-            '</div>' +
-          '</section>' +
+            '</section>' +
+          '</div>' +
         '</div>';
       return;
     }
@@ -776,23 +795,28 @@ window.AulaScreens = (function () {
     // --- Estado 1: evaluación final pendiente (CTA principal con presencia) ---
     var visited = AP.getResource('final-quiz-visited');
     var mainCta = F.quizUrl
-      ? '<a class="btn fn-start-btn" href="' + esc(F.quizUrl) + '" target="_blank" rel="noopener" data-final-visit>' + IC.arrow + ' Realizar Evaluación final</a>'
+      ? '<a class="btn fn-start-btn" href="' + esc(F.quizUrl) + '" target="_blank" rel="noopener" data-final-visit>' + IC.arrow + ' Accedé acá</a>'
       : '<span class="fn-pending">Falta configurar el enlace del cuestionario final para este curso.</span>';
 
     host.innerHTML =
       '<div class="fn fn-pending-state">' +
         '<a class="ub-back" href="inicio.html">' + IC.back + ' Volver al inicio</a>' +
-        '<div class="fn-hero fn-hero-start">' +
-          '<span class="fn-start-ic">' + IC.quiz + '</span>' +
-          '<span class="mi-eyebrow">Último paso del recorrido</span>' +
-          '<h1 class="fn-congrats">' + esc(F.label || 'Evaluación final') + '</h1>' +
-          '<p class="fn-hero-desc">Llegaste al último desafío del curso. Realizá la evaluación final para completar tu recorrido.</p>' +
-          '<div class="fn-start-actions">' + mainCta + '</div>' +
+        '<div class="fn-start-card">' +
+          '<div class="fn-hero fn-hero-start">' +
+            '<span class="fn-start-ic">' + IC.quiz + '</span>' +
+            '<span class="mi-eyebrow">Último paso del recorrido</span>' +
+            '<h1 class="fn-congrats">' + esc(F.label || 'Evaluación final') + '</h1>' +
+            '<p class="fn-hero-desc">Llegaste al último desafío del curso: es el paso final para completar tu recorrido.</p>' +
+          '</div>' +
+          '<div class="fn-start-cta">' +
+            '<p class="fn-start-q">¿Todavía no realizaste la Evaluación final?</p>' +
+            '<div class="fn-start-actions">' + mainCta + '</div>' +
+          '</div>' +
         '</div>' +
         '<div class="ub-cta fn-approve">' +
-          '<div class="mi-note">' + IC.info + '<span>Cuando la apruebes en Moodle (7 o más), marcala como aprobada para completar tu recorrido y habilitar tu <b>certificado</b>.</span></div>' +
+          '<div class="mi-note">' + IC.info + '<span>La evaluación final se rinde en Moodle. Cuando la termines, marcala como realizada para registrar tu avance. Recordá que la aprobación se valida en Moodle.</span></div>' +
           '<div class="ub-cta-actions">' +
-            '<button type="button" class="btn btn-complete" data-approve-final ' + (visited ? '' : 'disabled') + '>' + IC.checkC + ' Marcar evaluación como aprobada</button>' +
+            '<button type="button" class="btn btn-complete" data-approve-final ' + (visited ? '' : 'disabled') + '>' + IC.checkC + ' Marcar evaluación como realizada</button>' +
           '</div>' +
         '</div>' +
       '</div>';
@@ -805,7 +829,7 @@ window.AulaScreens = (function () {
     if (approveBtn) approveBtn.addEventListener('click', function () {
       if (approveBtn.hasAttribute('disabled')) return;
       AP.complete('final.quiz'); // marca la evaluación final -> activa certificate (recompute)
-      if (AP.showToast) AP.showToast('¡Curso completado! Tu certificación está disponible.', 'achievement');
+      if (AP.showToast) AP.showToast('Registramos la evaluación final como realizada.', 'achievement');
       if (window.AulaShell) window.AulaShell.render();
       try { if (AP.pendingCelebrations && AP.runCelebrations) AP.runCelebrations(AP.pendingCelebrations(AP.load())); } catch (e) {}
       draw();
