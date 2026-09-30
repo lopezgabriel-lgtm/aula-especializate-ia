@@ -52,7 +52,7 @@ window.AulaTour = (function () {
       { target: '.mi-chips', title: 'Datos del módulo', text: 'Un resumen rápido: cantidad de unidades, tiempo estimado y la XP que podés sumar en este módulo.' },
       { target: '.mi-video', title: 'Video de introducción', text: 'Arrancá por el video del módulo: te da el panorama general antes de recorrer las unidades.' },
       { target: '.mi-units', title: 'El recorrido del módulo', text: 'Estas son las unidades. Se abren de a una: al completar cada una, se desbloquea la siguiente.' },
-      { target: '.mi-unit-q', title: 'El cierre: el cuestionario', text: 'El cuestionario final es el último paso. Se habilita al completar todas las unidades y, al aprobarlo, cerrás el módulo.' },
+      { target: '.mi-unit-q', title: 'El cierre: el cuestionario', text: 'El cuestionario final es el último paso. Se habilita al completar todas las unidades y, al marcarlo como realizado, cerrás el módulo.' },
       { target: '.mi-start', title: 'Comenzá el módulo', text: 'Cuando quieras arrancar, entrá a la primera unidad desde este botón.' }
     ],
 
@@ -67,12 +67,12 @@ window.AulaTour = (function () {
 
     /* ---------- CUESTIONARIO / cierre de módulo (concepto + navegación) ---------- */
     cuestionario: [
-      { target: '.cq-card', title: 'El cierre del módulo', text: 'Este es el último paso del módulo: el cuestionario final. Al aprobarlo, cerrás el módulo y desbloqueás el siguiente.' },
+      { target: '.cq-card', title: 'El cierre del módulo', text: 'Este es el último paso del módulo: el cuestionario final. Al marcarlo como realizado, cerrás el módulo y desbloqueás el siguiente.' },
       { target: '.cq-card', title: 'Se rinde en Moodle', text: 'El cuestionario se realiza en Moodle. Para acceder necesitás estar logueado en tu cuenta del aula virtual. Se abre en una pestaña nueva.' },
-      { target: null, fallback: true, title: 'Cómo se aprueba', text: 'Para aprobar necesitás una calificación de 7 o más. Con esa nota vas a poder marcar el cuestionario como aprobado y cerrar el módulo.' },
+      { target: null, fallback: true, title: 'Cómo se aprueba', text: 'Para aprobar necesitás una calificación de 7 o más. En el aula, marcás el cuestionario como realizado para cerrar el módulo; la aprobación se valida en Moodle.' },
       { target: null, fallback: true, title: 'Si todavía no llegás a 7', text: 'Podés volver a intentarlo las veces que necesites. Te recomendamos aprobar antes de avanzar. Moodle controla la secuencia de los cuestionarios: aunque puedas continuar con algunos contenidos desde esta aula, el siguiente cuestionario permanecerá bloqueado hasta que apruebes el anterior.' },
       { target: null, fallback: true, title: 'La certificación del curso', text: 'Recordá que para acceder a la certificación necesitás tener todos los cuestionarios aprobados. Por eso conviene ir completándolos a medida que avanzás.' },
-      { target: '[data-close-module]', title: 'Cuando lo apruebes', text: 'Una vez que lo apruebes en Moodle (7 o más), marcá acá el cuestionario como aprobado para registrar tu avance, cerrar el módulo y continuar con el siguiente.' },
+      { target: '[data-close-module]', title: 'Cuando termines el cuestionario', text: 'Una vez que completes el cuestionario en Moodle, volvé al aula y marcá acá esta instancia como realizada para registrar tu avance, cerrar el módulo y continuar con el siguiente.' },
       { target: '[data-tour-open]', title: 'Ayuda siempre a mano', text: 'Podés volver a ver esta guía cuando quieras desde este botón:', demo: '<span class="tour-demo-btn" aria-hidden="true"><span class="tour-demo-q">?</span><span class="tour-demo-tx">Ayuda</span></span>' }
     ]
   };
