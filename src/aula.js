@@ -27,8 +27,9 @@ const AULA_BASE = path.resolve(config.aula.dir);
 function progressBootstrap() {
   var progressCfg = JSON.stringify({ mode: config.progress.mode, endpoint: config.progress.endpoint });
   return (
-    '\n<script>window.__AULA_PROGRESS__=' + progressCfg + ';</script>' +
-    '\n<script src="/aula-client/progress.repository.js"></script>\n'
+    '\n<script>window.__AULA_BASE__=' + JSON.stringify(config.basePath) +
+    ';window.__AULA_PROGRESS__=' + progressCfg + ';</script>' +
+    '\n<script src="' + config.basePath + '/aula-client/progress.repository.js"></script>\n'
   );
 }
 
@@ -36,7 +37,7 @@ function progressBootstrap() {
 function bodyEndSnippet() {
   return (
     '\n<script>window.__AULA_MOODLE_URL__=' + JSON.stringify(config.moodleEffectiveUrl) + ';</script>' +
-    '\n<script src="/aula-client/auth.js"></script>\n'
+    '\n<script src="' + config.basePath + '/aula-client/auth.js"></script>\n'
   );
 }
 
