@@ -29,6 +29,16 @@ function int(name, def) {
 }
 function stripSlash(u) { return typeof u === 'string' ? u.replace(/\/+$/, '') : u; }
 
+// Prefijo bajo el que se sirve este gateway dentro del dominio (p. ej.
+// /aula/iniciacion). Vacío = raíz. Siempre con "/" inicial y sin "/" final.
+function basePathFrom(v) {
+  let p = String(v || '').trim();
+  if (!p || p === '/') return '';
+  if (!p.startsWith('/')) p = '/' + p;
+  return p.replace(/\/+$/, '');
+}
+const BASE_PATH = basePathFrom(str('BASE_PATH', ''));
+
 const NODE_ENV = str('NODE_ENV', 'development');
 const isProd = NODE_ENV === 'production';
 
@@ -39,6 +49,8 @@ const config = {
   isProd,
   port: int('PORT', 3000),
   publicBaseUrl: stripSlash(str('PUBLIC_BASE_URL', 'http://localhost:3000')),
+  // Prefijo de ruta (ver basePathFrom). PUBLIC_BASE_URL es solo el origen.
+  basePath: BASE_PATH,
 
   aula: {
     // Carpeta del aula estática existente (se sirve sin modificar).
@@ -92,7 +104,7 @@ const config = {
     internalSecret: str('INTERNAL_API_SECRET', ''),
     courseId: str('COURSE_ID', 'DEFAULT'),
     dataDir: path.resolve(PROJECT_ROOT, str('PROGRESS_DATA_DIR', './.data')),
-    endpoint: '/api/progress',
+    endpoint: BASE_PATH + '/api/progress',
   },
 
   dev: {
@@ -111,14 +123,18 @@ config.cookieBase = {
   httpOnly: true,
   secure: config.isProd || config.session.embedInIframe,
   sameSite: config.session.embedInIframe ? 'none' : 'lax',
-  path: '/',
+  // Cookies acotadas al prefijo: no se filtran a otros proyectos del dominio.
+  path: BASE_PATH || '/',
 };
 
 // URLs absolutas derivadas (las que se registran en Moodle).
+// Entrada del aula como URL absoluta (incluye el prefijo).
+config.entryUrl = config.publicBaseUrl + BASE_PATH + config.aula.entry;
+
 config.lti.urls = {
-  login: config.publicBaseUrl + config.lti.paths.login,
-  launch: config.publicBaseUrl + config.lti.paths.launch,
-  jwks: config.publicBaseUrl + config.lti.paths.jwks,
+  login: config.publicBaseUrl + BASE_PATH + config.lti.paths.login,
+  launch: config.publicBaseUrl + BASE_PATH + config.lti.paths.launch,
+  jwks: config.publicBaseUrl + BASE_PATH + config.lti.paths.jwks,
 };
 
 /* --------------------------- Validación ------------------------------- */
@@ -146,6 +162,13 @@ export function validateConfig() {
   }
   if (config.session.embedInIframe && config.publicBaseUrl.startsWith('http://')) {
     errors.push('EMBED_IN_IFRAME=true requiere https:// (SameSite=None; Secure no funciona sobre http).');
+  }
+  try {
+    if (new URL(config.publicBaseUrl).pathname !== '/') {
+      errors.push('PUBLIC_BASE_URL debe ser solo el origen (sin ruta). El prefijo va en BASE_PATH.');
+    }
+  } catch {
+    errors.push('PUBLIC_BASE_URL no es una URL válida.');
   }
   return errors;
 }

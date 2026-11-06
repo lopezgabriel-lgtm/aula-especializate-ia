@@ -45,7 +45,7 @@ export function handleLogin(req, res) {
   store.putTransaction(state, {
     nonce,
     clientId,
-    targetLinkUri: targetLinkUri || (config.publicBaseUrl + config.aula.entry),
+    targetLinkUri: targetLinkUri || config.entryUrl,
     createdAt: Date.now(),
   });
 

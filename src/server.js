@@ -83,40 +83,50 @@ async function main() {
       httpOnly: true,
       secure: config.cookieBase.secure,
       sameSite: config.cookieBase.sameSite,
+      path: config.cookieBase.path,
       maxAge: config.session.ttlMs,
     },
   }));
 
+  // Todo el gateway vive bajo BASE_PATH (p. ej. /aula/iniciacion). Un Router
+  // montado en el prefijo recorta la ruta antes de matchear, así las rutas
+  // internas (/lti/..., /api/..., /inicio.html) no cambian. Nginx reenvía la
+  // ruta completa, sin reescribirla.
+  const gateway = express.Router();
+
   // --- 3) Rutas públicas ---
-  app.use(ltiRoutes);                                   // /lti/login, /lti/launch, /lti/jwks, (dev)
-  app.get('/acceso.html', serveAcceso);                 // "Ingresá desde tu aula de Moodle"
-  app.get('/sesion-finalizada.html', serveSesionFinalizada); // "Tu sesión finalizó"
-  app.use('/aula-client', express.static(config.aulaClientDir)); // auth.js inyectado
-  app.get('/healthz', (req, res) => res.json({ ok: true }));
-  app.use(sessionRoutes);                               // /api/me, /api/logout
-  app.use(progressRoutes);                              // /api/progress (identidad desde la sesión)
+  gateway.use(ltiRoutes);                                   // /lti/login, /lti/launch, /lti/jwks, (dev)
+  gateway.get('/acceso.html', serveAcceso);                 // "Ingresá desde tu aula de Moodle"
+  gateway.get('/sesion-finalizada.html', serveSesionFinalizada); // "Tu sesión finalizó"
+  gateway.use('/aula-client', express.static(config.aulaClientDir)); // auth.js inyectado
+  gateway.get('/healthz', (req, res) => res.json({ ok: true }));
+  gateway.use(sessionRoutes);                               // /api/me, /api/logout
+  gateway.use(progressRoutes);                              // /api/progress (identidad desde la sesión)
 
   // --- 4) Guard: de acá en adelante, todo requiere sesión LTI ---
-  app.use(requireSession);
+  gateway.use(requireSession);
 
   // --- 5) Aula estática (protegida, sin modificar, con bootstrap inyectado) ---
-  app.get('/', (req, res) => res.redirect(302, config.aula.entry));
-  app.use(aulaHtmlInjector());
-  app.use(aulaStatic());
+  gateway.get('/', (req, res) => res.redirect(302, config.entryUrl));
+  gateway.use(aulaHtmlInjector());
+  gateway.use(aulaStatic());
+
+  app.use(config.basePath || '/', gateway);
 
   app.listen(config.port, () => {
     console.log('\n================ Especializate · Gateway LTI 1.3 ================');
     console.log('  Entorno         :', config.env);
     console.log('  Escuchando en   :', config.publicBaseUrl, '(puerto ' + config.port + ')');
+    console.log('  Prefijo         :', config.basePath || '(raíz)');
     console.log('  Aula servida de :', config.aula.dir);
-    console.log('  Entrada aula    :', config.aula.entry);
+    console.log('  Entrada aula    :', config.entryUrl);
     console.log('  Moodle URL      :', config.moodleEffectiveUrl);
     console.log('  Progreso        : modo=' + config.progress.mode + '  store=' + config.progress.store);
     console.log('  --- URLs para registrar en Moodle ---');
     console.log('  Tool / Launch   :', config.lti.urls.launch);
     console.log('  OIDC login init :', config.lti.urls.login);
     console.log('  JWKS (keyset)   :', config.lti.urls.jwks);
-    if (config.dev.fakeLaunch) console.log('  [DEV] launch sim:', config.publicBaseUrl + '/dev/launch');
+    if (config.dev.fakeLaunch) console.log('  [DEV] launch sim:', config.publicBaseUrl + config.basePath + '/dev/launch');
     console.log('================================================================\n');
   });
 }

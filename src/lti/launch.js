@@ -114,14 +114,18 @@ export async function handleLaunch(req, res) {
   });
 }
 
-// Solo permitimos redirigir dentro de nuestro propio origen (evita open-redirect).
+// Solo permitimos redirigir dentro de nuestro origen Y de nuestro prefijo, y
+// nunca a /lti/ (evita el bucle a /lti/launch cuando Moodle manda esa URL como
+// target_link_uri). Cualquier otro destino cae en la entrada del aula.
 function safeSameOriginTarget(candidate) {
-  const fallback = config.publicBaseUrl + config.aula.entry;
+  const fallback = config.entryUrl;
   if (!candidate) return fallback;
   try {
-    const u = new URL(candidate, config.publicBaseUrl);
     const base = new URL(config.publicBaseUrl);
-    if (u.origin === base.origin) return u.pathname + u.search + u.hash;
+    const u = new URL(candidate, config.publicBaseUrl);
+    const inside = u.pathname === config.basePath || u.pathname.startsWith(config.basePath + '/');
+    const isLti = u.pathname.startsWith(config.basePath + '/lti/');
+    if (u.origin === base.origin && inside && !isLti) return u.pathname + u.search + u.hash;
   } catch { /* noop */ }
   return fallback;
 }
