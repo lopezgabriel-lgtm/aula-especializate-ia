@@ -902,7 +902,7 @@ window.AulaProgress = (function () {
     if (done) {
       done.addEventListener('click', function () {
         if (getFlag(load(), 'final.quiz')) return; // ya estaba marcado
-        var ok = window.confirm('¿Confirmás que ya rendiste el cuestionario final en Moodle? Con esto se habilitará tu certificación.');
+        var ok = window.confirm('¿Confirmás que ya rendiste el cuestionario final en el campus virtual? Con esto se habilitará tu certificación.');
         if (!ok) return;
         complete('final.quiz');
         showToast('¡Cuestionario final completado! Ya podés acceder a tu certificación.', 'achievement');
