@@ -35,7 +35,7 @@ window.COURSE_CONFIG = {
         "required": true,
         "label": "Programa del curso",
         "kind": "pdf",
-        "url": "https://drive.google.com/file/d/19hbj1rzgdW8mM5mOw3sCXJp3Mv1mKA2v/view?usp=sharing",
+        "url": "https://drive.google.com/file/d/18CMa54vp5dHfWUm0XGIuquoQwhoSVjob/view",
         "description": "Consultá el programa para conocer la propuesta formativa, los objetivos, la estructura del recorrido, los aprendizajes esperados y la modalidad de cursada."
       }
     ]
